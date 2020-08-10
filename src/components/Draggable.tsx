@@ -14,7 +14,7 @@ export type DraggableState =
 	  }
 	| DraggingState
 
-type DraggableEvents = {
+export type DraggableEvents = {
 	onMouseDown: (e: React.MouseEvent<Element>) => void
 }
 
