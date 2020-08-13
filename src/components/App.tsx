@@ -7,6 +7,13 @@ import { random } from "lodash"
 // - [ ] toolbar (reset state, new block)
 // - [ ] different types of music blocks
 //   - [ ] Piano
+//    - [ ] Chord Name
+//    - [ ] Octave labels
+//    - [ ] Save scroll offset + initial offset
+//    - [ ] Click notes
+//    - [ ] Shadow notes
+//    - [ ] Chord prediction
+//    - [ ] block type drop-down
 //   - [ ] Guitar
 //   - [ ] Spiral
 //   - [ ] Circle
@@ -204,7 +211,7 @@ function PianoBlock(props: {
 	onUpdate: (block: BlockState) => void
 	events: DraggableEvents
 }) {
-	const { block, events } = props
+	const { block, onUpdate, events } = props
 	return (
 		<div
 			{...events}
@@ -220,12 +227,18 @@ function PianoBlock(props: {
 			}}
 		>
 			Piano
-			<PianoKeyboard />
+			<PianoKeyboard block={block} onUpdate={onUpdate} />
 		</div>
 	)
 }
 
-function PianoKeyboard() {
+function PianoKeyboard(props: {
+	block: PianoBlockState
+	onUpdate: (block: BlockState) => void
+	showMidiNote?: boolean
+}) {
+	const { showMidiNote, block, onUpdate } = props
+
 	const octaves = 8
 	const width = 20
 	const height = 90
@@ -233,6 +246,19 @@ function PianoKeyboard() {
 	const whiteNotes = Array(octaves * 7)
 		.fill(0)
 		.map((_, i) => {
+			// Piano key indexes (p):
+			//  1 3   6 8 10
+			// 0 2 4 5 7 9 11
+			// White key indexes (w):
+			// 0 1 2 3 4 5
+			//
+			// p = w * 2 - (w > 2 ? 1 : 0)
+			const whiteKeyIndex = i % 7
+			const pianoKeyIndex = whiteKeyIndex * 2 - (whiteKeyIndex > 2 ? 1 : 0)
+
+			const octave = Math.floor(i / 7)
+			const midiNote = octave * 12 + pianoKeyIndex
+
 			return (
 				<div
 					key={`white-${i}`}
@@ -246,19 +272,64 @@ function PianoKeyboard() {
 						top: 0,
 						left: i * width,
 					}}
-				></div>
+				>
+					<div
+						style={{
+							position: "absolute",
+							bottom: 0,
+							width: "100%",
+							textAlign: "center",
+							fontSize: width * 0.6,
+						}}
+					>
+						{showMidiNote && midiNote}
+					</div>
+
+					{whiteKeyIndex === 0 && (
+						<div
+							style={{
+								position: "absolute",
+								top: "100%",
+								width: "100%",
+								textAlign: "center",
+								fontSize: width * 0.5,
+							}}
+						>
+							{`C${octave - 1}`}
+						</div>
+					)}
+				</div>
 			)
 		})
 
 	const blackNotes = Array(octaves * 5)
 		.fill(0)
 		.map((_, i) => {
-			const w = 0.5
-			const h = 0.55
+			// Fraction of a white note.
+			const widthFraction = 0.5
+			const heightFraction = 0.55
 
-			const n = i % 5
-			const offset = (1 - w / 2 + (n > 1 ? 1 : 0) + n) * width
-			const octave = Math.floor(i / 5) * width * 7
+			// Piano key indexes (p):
+			//  1 3   6 8 10
+			// 0 2 4 5 7 9 11
+			// Black key indexes (b):
+			//  0 1   2 3 4
+			//
+			// p = b * 2 + (b > 1 ? 2 : 1)
+			const blackNoteIndex = i % 5
+			const pianoKeyIndex = blackNoteIndex * 2 + (blackNoteIndex > 1 ? 2 : 1)
+
+			const octave = Math.floor(i / 5)
+			const midiNote = octave * 12 + pianoKeyIndex
+
+			const keyOffset =
+				(1 -
+					widthFraction / 2 +
+					(blackNoteIndex > 1 ? 1 : 0) +
+					blackNoteIndex) *
+				width
+			const octaveOffset = octave * width * 7
+			const offset = octaveOffset + keyOffset
 
 			return (
 				<div
@@ -266,15 +337,28 @@ function PianoKeyboard() {
 					style={{
 						border: "1px solid black",
 						boxSizing: "border-box",
-						height: height * h,
-						width: width * w,
-						marginBottom: height * (1 - h),
+						height: height * heightFraction,
+						width: width * widthFraction,
+						marginBottom: height * (1 - heightFraction),
 						background: "black",
 						position: "absolute",
 						top: 0,
-						left: octave + offset,
+						left: offset,
 					}}
-				></div>
+				>
+					<div
+						style={{
+							position: "absolute",
+							bottom: 0,
+							width: "100%",
+							textAlign: "center",
+							fontSize: width * widthFraction * 0.8,
+							color: "white",
+						}}
+					>
+						{showMidiNote && midiNote}
+					</div>
+				</div>
 			)
 		})
 
