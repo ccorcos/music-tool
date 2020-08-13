@@ -217,16 +217,17 @@ function PianoBlock(props: {
 			{...events}
 			style={{
 				position: "absolute",
-				width: 200,
-				height: 120,
+				width: 220,
+				height: 144,
 				border: "2px solid black",
 				background: "white",
 				top: block.y,
 				left: block.x,
-				overflowX: "auto",
+				display: "flex",
+				flexDirection: "column",
 			}}
 		>
-			Piano
+			<div>Piano</div>
 			<PianoKeyboard block={block} onUpdate={onUpdate} />
 		</div>
 	)
@@ -362,14 +363,19 @@ function PianoKeyboard(props: {
 			)
 		})
 
+	const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+		console.log("scrollLeft:", e.currentTarget!.scrollLeft)
+	}
+
 	return (
 		<div
-			style={{
-				width: (width * octaves * 7) / 12,
-			}}
+			style={{ position: "relative", overflowX: "auto", height: height * 1.2 }}
+			onScroll={handleScroll}
 		>
-			{whiteNotes}
-			{blackNotes}
+			<div style={{ width: (width * octaves * 7) / 12 }}>
+				{whiteNotes}
+				{blackNotes}
+			</div>
 		</div>
 	)
 }
