@@ -6,7 +6,7 @@ import { GuitarBlock } from "./GuitarBlock"
 
 // - [x] JSON state, persist to localStorage
 // - [x] draggable blocks
-// - [ ] toolbar (reset state, new block)
+// - [x] toolbar (reset state, new block)
 // - [ ] different types of music blocks
 //   - [ ] Piano
 //    - [ ] Chord Name
@@ -119,26 +119,8 @@ export function Block(props: {
 	onUpdate: (block: BlockState) => void
 }) {
 	return (
-		<Draggable
-			onDragEnd={(state) => {
-				props.onUpdate({
-					...props.block,
-					x: props.block.x + state.end.x - state.start.x,
-					y: props.block.y + state.end.y - state.start.y,
-				})
-			}}
-		>
-			{(events, state) => {
-				let block = props.block
-				if (state.down) {
-					block = {
-						...block,
-						x: props.block.x + state.end.x - state.start.x,
-						y: props.block.y + state.end.y - state.start.y,
-					}
-				}
-				console.debug("Block.render", state)
-
+		<DraggableBlock block={props.block} onUpdate={props.onUpdate}>
+			{(events, block) => {
 				if (block.type === "piano") {
 					return (
 						<PianoBlock
@@ -159,10 +141,40 @@ export function Block(props: {
 					return <div />
 				}
 			}}
-		</Draggable>
+		</DraggableBlock>
 	)
 }
 
 function randomId() {
 	return Math.random().toString().slice(2)
+}
+
+export function DraggableBlock(props: {
+	block: BlockState
+	onUpdate: (block: BlockState) => void
+	children: (events: DraggableEvents, block: BlockState) => JSX.Element
+}) {
+	return (
+		<Draggable
+			onDragEnd={(state) => {
+				props.onUpdate({
+					...props.block,
+					x: props.block.x + state.end.x - state.start.x,
+					y: props.block.y + state.end.y - state.start.y,
+				})
+			}}
+		>
+			{(events, state) => {
+				let block = props.block
+				if (state.down) {
+					block = {
+						...block,
+						x: props.block.x + state.end.x - state.start.x,
+						y: props.block.y + state.end.y - state.start.y,
+					}
+				}
+				return props.children(events, block)
+			}}
+		</Draggable>
+	)
 }

@@ -8,6 +8,8 @@ export type PianoBlockState = BlockStateBase & {
 	type: "piano"
 	notes?: Array<number>
 	shadow?: boolean
+	scrollLeft?: number
+	width?: number
 }
 
 export type GuitarBlockState = BlockStateBase & {

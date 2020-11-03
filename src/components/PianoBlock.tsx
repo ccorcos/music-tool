@@ -1,6 +1,7 @@
-import React, { useState, useCallback, PureComponent } from "react"
+import React, { useState, useCallback, PureComponent, createRef } from "react"
 import { Draggable, Point, DraggableEvents } from "./Draggable"
 import { PianoBlockState, BlockState } from "../state"
+import { throttle } from "lodash"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -24,21 +25,25 @@ export function PianoBlock(props: {
 			}}
 		>
 			<div>Piano</div>
-			<PianoKeyboard block={block} onUpdate={onUpdate} />
+			<PianoScroller block={block} onUpdate={onUpdate}>
+				<PianoKeyboard block={block} onUpdate={onUpdate} />
+			</PianoScroller>
 		</div>
 	)
 }
 
-function PianoKeyboard(props: {
+type PianoKeyboardProps = {
 	block: PianoBlockState
 	onUpdate: (block: BlockState) => void
 	showMidiNote?: boolean
-}) {
-	const { showMidiNote, block, onUpdate } = props
+}
 
-	const octaves = 8
-	const width = 20
-	const height = 90
+const octaves = 8
+const width = 20
+const height = 90
+
+function PianoKeyboard(props: PianoKeyboardProps) {
+	const { showMidiNote, block, onUpdate } = props
 
 	const whiteNotes = Array(octaves * 7)
 		.fill(0)
@@ -159,19 +164,47 @@ function PianoKeyboard(props: {
 			)
 		})
 
-	const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-		console.log("scrollLeft:", e.currentTarget!.scrollLeft)
-	}
-
 	return (
-		<div
-			style={{ position: "relative", overflowX: "auto", height: height * 1.2 }}
-			onScroll={handleScroll}
-		>
-			<div style={{ width: (width * octaves * 7) / 12 }}>
-				{whiteNotes}
-				{blackNotes}
-			</div>
+		<div style={{ width: (width * octaves * 7) / 12 }}>
+			{whiteNotes}
+			{blackNotes}
 		</div>
 	)
+}
+
+class PianoScroller extends PureComponent<
+	PianoKeyboardProps & { children: JSX.Element }
+> {
+	private div = createRef<HTMLDivElement>()
+
+	render() {
+		return (
+			<div
+				ref={this.div}
+				style={{
+					position: "relative",
+					overflowX: "auto",
+					height: height * 1.2,
+				}}
+				onScroll={this.handleScroll}
+			>
+				{this.props.children}
+			</div>
+		)
+	}
+
+	componentDidMount() {
+		this.div.current!.scrollLeft = this.props.block.scrollLeft || 0
+	}
+
+	private handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+		this.setScrollLeft(e.currentTarget!.scrollLeft)
+	}
+
+	private setScrollLeft = throttle((scrollLeft: number) => {
+		this.props.onUpdate({
+			...this.props.block,
+			scrollLeft,
+		})
+	}, 100)
 }

@@ -41,7 +41,7 @@ export class Draggable extends PureComponent<DraggableProps, DraggableState> {
 	}
 
 	handleMouseDown = (e: React.MouseEvent<Element>) => {
-		console.debug("Draggable.handleMouseDown")
+		// console.debug("Draggable.handleMouseDown")
 
 		// Only respond to left-clicks
 		if (e.button !== 0) {
@@ -62,7 +62,7 @@ export class Draggable extends PureComponent<DraggableProps, DraggableState> {
 	}
 
 	handleMouseMove = (e: MouseEvent) => {
-		console.debug("Draggable.handleMouseMove")
+		// console.debug("Draggable.handleMouseMove")
 
 		if (this.state.down) {
 			const point = {
@@ -77,7 +77,7 @@ export class Draggable extends PureComponent<DraggableProps, DraggableState> {
 	}
 
 	handleMouseUp = (e: MouseEvent) => {
-		console.debug("Draggable.handleMouseUp")
+		// console.debug("Draggable.handleMouseUp")
 
 		if (this.state.down) {
 			if (this.props.onDragEnd) {
