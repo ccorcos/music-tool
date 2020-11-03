@@ -1,20 +1,30 @@
 import React, { useState, useCallback, PureComponent, createRef } from "react"
-import { Draggable, Point, DraggableEvents } from "./Draggable"
+import { Draggable, Point, DraggableEvents, OnMouseDown } from "./Draggable"
 import { PianoBlockState, BlockState } from "../state"
 import { throttle } from "lodash"
+import { Resizer } from "./Resizer"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
 	onUpdate: (block: BlockState) => void
-	events: DraggableEvents
+	onMouseDownDrag: OnMouseDown
+	dragging: boolean
+	onMouseDownResize: OnMouseDown
+	resizing: boolean
 }) {
-	const { block, onUpdate, events } = props
+	const {
+		block,
+		onUpdate,
+		onMouseDownDrag,
+		dragging,
+		onMouseDownResize,
+		resizing,
+	} = props
 	return (
 		<div
-			{...events}
 			style={{
 				position: "absolute",
-				width: 220,
+				width: block.width,
 				height: 144,
 				border: "2px solid black",
 				background: "white",
@@ -24,10 +34,16 @@ export function PianoBlock(props: {
 				flexDirection: "column",
 			}}
 		>
-			<div>Piano</div>
+			<div
+				style={{ cursor: dragging ? "grabbing" : "grab" }}
+				onMouseDown={onMouseDownDrag}
+			>
+				Piano
+			</div>
 			<PianoScroller block={block} onUpdate={onUpdate}>
 				<PianoKeyboard block={block} onUpdate={onUpdate} />
 			</PianoScroller>
+			<Resizer onMouseDownResize={onMouseDownResize} />
 		</div>
 	)
 }

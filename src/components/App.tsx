@@ -1,5 +1,5 @@
 import React, { useState, useCallback, PureComponent } from "react"
-import { Draggable, Point, DraggableEvents } from "./Draggable"
+import { Draggable, Point, DraggableEvents, useDrag } from "./Draggable"
 import { BlockState } from "../state"
 import { PianoBlock } from "./PianoBlock"
 import { GuitarBlock } from "./GuitarBlock"
@@ -77,6 +77,7 @@ export function App() {
 					type: "piano",
 					notes: [],
 					shadow: false,
+					width: 220,
 				},
 			],
 		})
@@ -95,6 +96,7 @@ export function App() {
 					notes: [],
 					frets: [],
 					shadow: false,
+					width: 200,
 				},
 			],
 		})
@@ -118,63 +120,127 @@ export function Block(props: {
 	block: BlockState
 	onUpdate: (block: BlockState) => void
 }) {
-	return (
-		<DraggableBlock block={props.block} onUpdate={props.onUpdate}>
-			{(events, block) => {
-				if (block.type === "piano") {
-					return (
-						<PianoBlock
-							block={block}
-							onUpdate={props.onUpdate}
-							events={events}
-						/>
-					)
-				} else if (block.type === "guitar") {
-					return (
-						<GuitarBlock
-							block={block}
-							onUpdate={props.onUpdate}
-							events={events}
-						/>
-					)
-				} else {
-					return <div />
-				}
-			}}
-		</DraggableBlock>
-	)
+	const [dragBlock, onMouseDownDrag, dragging] = useDragBlock({
+		block: props.block,
+		onUpdate: props.onUpdate,
+	})
+
+	const [block, onMouseDownResize, resizing] = useResizeBlock({
+		block: dragBlock,
+		onUpdate: props.onUpdate,
+	})
+
+	if (block.type === "piano") {
+		return (
+			<PianoBlock
+				block={block}
+				onUpdate={props.onUpdate}
+				onMouseDownDrag={onMouseDownDrag}
+				dragging={dragging}
+				onMouseDownResize={onMouseDownResize}
+				resizing={resizing}
+			/>
+		)
+	} else if (block.type === "guitar") {
+		return (
+			<GuitarBlock
+				block={block}
+				onUpdate={props.onUpdate}
+				onMouseDownDrag={onMouseDownDrag}
+				dragging={dragging}
+				onMouseDownResize={onMouseDownResize}
+				resizing={resizing}
+			/>
+		)
+	} else {
+		return <div />
+	}
 }
 
 function randomId() {
 	return Math.random().toString().slice(2)
 }
 
-export function DraggableBlock(props: {
+function useDragBlock(args: {
 	block: BlockState
 	onUpdate: (block: BlockState) => void
-	children: (events: DraggableEvents, block: BlockState) => JSX.Element
 }) {
-	return (
-		<Draggable
-			onDragEnd={(state) => {
-				props.onUpdate({
-					...props.block,
-					x: props.block.x + state.end.x - state.start.x,
-					y: props.block.y + state.end.y - state.start.y,
-				})
-			}}
-		>
-			{(events, state) => {
-				let block = props.block
-				if (state.down) {
-					block = {
-						...block,
-						x: props.block.x + state.end.x - state.start.x,
-						y: props.block.y + state.end.y - state.start.y,
-					}
-				}
-				return props.children(events, block)
-			}}
-		</Draggable>
-	)
+	let block = args.block
+
+	const [state, onMouseDown] = useDrag({
+		onDragEnd: (state) => {
+			args.onUpdate({
+				...args.block,
+				x: args.block.x + state.end.x - state.start.x,
+				y: args.block.y + state.end.y - state.start.y,
+			})
+		},
+	})
+
+	if (state.down) {
+		block = {
+			...block,
+			x: args.block.x + state.end.x - state.start.x,
+			y: args.block.y + state.end.y - state.start.y,
+		}
+	}
+
+	return [block, onMouseDown, state.down] as const
 }
+
+function useResizeBlock(args: {
+	block: BlockState
+	onUpdate: (block: BlockState) => void
+}) {
+	let block = args.block
+
+	const [state, onMouseDown] = useDrag({
+		onDragEnd: (state) => {
+			args.onUpdate({
+				...args.block,
+				width: args.block.width + state.end.x - state.start.x,
+			})
+		},
+	})
+
+	if (state.down) {
+		block = {
+			...block,
+			width: args.block.width + state.end.x - state.start.x,
+		}
+	}
+
+	return [block, onMouseDown, state.down] as const
+}
+
+// export function ResizableBlock(props: {
+// 	block: BlockState
+// 	onUpdate: (block: BlockState) => void
+// 	children: (
+// 		events: DraggableEvents,
+// 		block: BlockState,
+// 		dragging: boolean
+// 	) => JSX.Element
+// }) {
+// 	return (
+// 		<Draggable
+// 			onDragEnd={(state) => {
+// 				props.onUpdate({
+// 					...props.block,
+// 					width: props.block.width + state.end.x - state.start.x,
+// 				})
+// 			}}
+// 		>
+// 			{(events, state) => {
+// 				let block = props.block
+// 				if (state.down) {
+// 					block = {
+// 						...block,
+// 						width: props.block.width + state.end.x - state.start.x,
+// 					}
+// 				}
+// 				return props.children(events, block, stte.down)
+// 			}}
+// 		</Draggable>
+// 	)
+// }

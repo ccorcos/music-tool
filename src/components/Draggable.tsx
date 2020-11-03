@@ -1,4 +1,4 @@
-import { PureComponent } from "react"
+import { PureComponent, useEffect, useState, useCallback, useRef } from "react"
 
 export type Point = { x: number; y: number }
 
@@ -17,6 +17,8 @@ export type DraggableState =
 export type DraggableEvents = {
 	onMouseDown: (e: React.MouseEvent<Element>) => void
 }
+
+export type OnMouseDown = (e: React.MouseEvent<Element>) => void
 
 type DraggableProps = {
 	onDragEnd?: (store: DraggingState) => void
@@ -98,4 +100,81 @@ export class Draggable extends PureComponent<DraggableProps, DraggableState> {
 			this.state
 		)
 	}
+}
+
+export function useDrag(args: { onDragEnd?: (store: DraggingState) => void }) {
+	const [state, setState] = useState<DraggableState>({ down: false })
+
+	const handleMouseMove = useCallback((e: MouseEvent) => {
+		// console.debug("Draggable.handleMouseMove")
+		setState((state) => {
+			if (state.down) {
+				const point = {
+					x: e.pageX,
+					y: e.pageY,
+				}
+				return {
+					...state,
+					end: point,
+				}
+			} else {
+				return state
+			}
+		})
+	}, [])
+
+	const onDragEndRef = useRef(args.onDragEnd)
+	onDragEndRef.current = args.onDragEnd
+
+	const handleMouseUp = useCallback((e: MouseEvent) => {
+		// console.debug("Draggable.handleMouseUp")
+		setState((state) => {
+			if (state.down) {
+				const onDragEnd = onDragEndRef.current
+				if (onDragEnd) {
+					onDragEnd(state)
+				}
+				stopListeners()
+				return { down: false }
+			} else {
+				return state
+			}
+		})
+	}, [])
+
+	const startListeners = useCallback(() => {
+		window.addEventListener("mousemove", handleMouseMove)
+		window.addEventListener("mouseup", handleMouseUp)
+	}, [])
+
+	const stopListeners = useCallback(() => {
+		window.removeEventListener("mousemove", handleMouseMove)
+		window.removeEventListener("mouseup", handleMouseUp)
+	}, [])
+
+	const handleMouseDown = useCallback((e: React.MouseEvent<Element>) => {
+		// console.debug("Draggable.handleMouseDown")
+
+		// Only respond to left-clicks
+		if (e.button !== 0) {
+			return
+		}
+		startListeners()
+		e.stopPropagation()
+		e.preventDefault()
+
+		setState((state) => {
+			const point = {
+				x: e.pageX,
+				y: e.pageY,
+			}
+			return {
+				down: true,
+				start: point,
+				end: point,
+			}
+		})
+	}, [])
+
+	return [state, handleMouseDown] as const
 }

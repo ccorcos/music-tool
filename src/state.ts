@@ -2,6 +2,7 @@ type BlockStateBase = {
 	id: string
 	x: number
 	y: number
+	width: number
 }
 
 export type PianoBlockState = BlockStateBase & {
@@ -9,7 +10,6 @@ export type PianoBlockState = BlockStateBase & {
 	notes?: Array<number>
 	shadow?: boolean
 	scrollLeft?: number
-	width?: number
 }
 
 export type GuitarBlockState = BlockStateBase & {
