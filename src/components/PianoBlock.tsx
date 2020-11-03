@@ -1,5 +1,5 @@
-import React, { useState, useCallback, PureComponent, createRef } from "react"
-import { Draggable, Point, DraggableEvents, OnMouseDown } from "./Draggable"
+import React, { PureComponent, createRef } from "react"
+import { OnMouseDown } from "../hooks/useDrag"
 import { PianoBlockState, BlockState } from "../state"
 import { throttle } from "lodash"
 import { Resizer } from "./Resizer"

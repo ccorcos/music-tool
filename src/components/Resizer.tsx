@@ -1,5 +1,5 @@
 import React from "react"
-import { OnMouseDown } from "./Draggable"
+import { OnMouseDown } from "../hooks/useDrag"
 
 export function Resizer(props: { onMouseDownResize: OnMouseDown }) {
 	const { onMouseDownResize } = props

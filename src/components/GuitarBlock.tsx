@@ -1,6 +1,6 @@
-import React, { useState, useCallback, PureComponent } from "react"
+import React from "react"
 import { GuitarBlockState, BlockState } from "../state"
-import { DraggableEvents, OnMouseDown } from "./Draggable"
+import { OnMouseDown } from "../hooks/useDrag"
 import { Resizer } from "./Resizer"
 
 export function GuitarBlock(props: {

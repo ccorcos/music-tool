@@ -21,7 +21,7 @@ const config: Configuration = {
 		],
 	},
 	cache: true,
-	devtool: "source-map",
+	devtool: "eval-cheap-module-source-map",
 	output: {
 		path: path.join(__dirname, "dist"),
 		filename: "[name]-[chunkhash].js",
