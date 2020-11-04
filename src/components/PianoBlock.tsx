@@ -3,6 +3,7 @@ import { OnMouseDown } from "../hooks/useDrag"
 import { PianoBlockState, BlockState } from "../state"
 import { throttle } from "lodash"
 import { Resizer } from "./Resizer"
+import { useHover } from "../hooks/useHover"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -41,7 +42,7 @@ export function PianoBlock(props: {
 				Piano
 			</div>
 			<PianoScroller block={block} onUpdate={onUpdate}>
-				<PianoKeyboard block={block} onUpdate={onUpdate} />
+				<PianoKeyboard block={block} onUpdate={onUpdate} showMidiNote={false} />
 			</PianoScroller>
 			<Resizer onMouseDownResize={onMouseDownResize} />
 		</div>
@@ -51,12 +52,16 @@ export function PianoBlock(props: {
 type PianoKeyboardProps = {
 	block: PianoBlockState
 	onUpdate: (block: BlockState) => void
-	showMidiNote?: boolean
+	showMidiNote: boolean
 }
 
 const octaves = 8
 const width = 20
 const height = 90
+
+// Fraction of a white note.
+const widthFraction = 0.5
+const heightFraction = 0.55
 
 function PianoKeyboard(props: PianoKeyboardProps) {
 	const { showMidiNote, block, onUpdate } = props
@@ -78,55 +83,18 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			const midiNote = octave * 12 + pianoKeyIndex
 
 			return (
-				<div
+				<WhiteNote
 					key={`white-${i}`}
-					style={{
-						border: "1px solid black",
-						boxSizing: "border-box",
-						height: height,
-						width: width,
-						background: "white",
-						position: "absolute",
-						top: 0,
-						left: i * width,
-					}}
-				>
-					<div
-						style={{
-							position: "absolute",
-							bottom: 0,
-							width: "100%",
-							textAlign: "center",
-							fontSize: width * 0.6,
-						}}
-					>
-						{showMidiNote && midiNote}
-					</div>
-
-					{whiteKeyIndex === 0 && (
-						<div
-							style={{
-								position: "absolute",
-								top: "100%",
-								width: "100%",
-								textAlign: "center",
-								fontSize: 12,
-							}}
-						>
-							{`C${octave - 1}`}
-						</div>
-					)}
-				</div>
+					leftPx={i * width}
+					showMidiNote={showMidiNote}
+					midiNote={midiNote}
+				/>
 			)
 		})
 
 	const blackNotes = Array(octaves * 5)
 		.fill(0)
 		.map((_, i) => {
-			// Fraction of a white note.
-			const widthFraction = 0.5
-			const heightFraction = 0.55
-
 			// Piano key indexes (p):
 			//  1 3   6 8 10
 			// 0 2 4 5 7 9 11
@@ -150,33 +118,12 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			const offset = octaveOffset + keyOffset
 
 			return (
-				<div
+				<BlackNote
 					key={`black-${i}`}
-					style={{
-						border: "1px solid black",
-						boxSizing: "border-box",
-						height: height * heightFraction,
-						width: width * widthFraction,
-						marginBottom: height * (1 - heightFraction),
-						background: "black",
-						position: "absolute",
-						top: 0,
-						left: offset,
-					}}
-				>
-					<div
-						style={{
-							position: "absolute",
-							bottom: 0,
-							width: "100%",
-							textAlign: "center",
-							fontSize: width * widthFraction * 0.8,
-							color: "white",
-						}}
-					>
-						{showMidiNote && midiNote}
-					</div>
-				</div>
+					leftPx={offset}
+					showMidiNote={showMidiNote}
+					midiNote={midiNote}
+				/>
 			)
 		})
 
@@ -188,9 +135,103 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 	)
 }
 
-class PianoScroller extends PureComponent<
-	PianoKeyboardProps & { children: JSX.Element }
-> {
+function BlackNote(props: {
+	leftPx: number
+	showMidiNote: boolean
+	midiNote: number
+}) {
+	const { leftPx, showMidiNote, midiNote } = props
+	const [hovering, events] = useHover()
+	return (
+		<div
+			{...events}
+			style={{
+				border: "1px solid black",
+				boxSizing: "border-box",
+				height: height * heightFraction,
+				width: width * widthFraction,
+				marginBottom: height * (1 - heightFraction),
+				background: hovering ? "gray" : "black",
+				position: "absolute",
+				top: 0,
+				left: leftPx,
+			}}
+		>
+			<div
+				style={{
+					position: "absolute",
+					bottom: 0,
+					width: "100%",
+					textAlign: "center",
+					fontSize: width * widthFraction * 0.8,
+					color: "white",
+				}}
+			>
+				{showMidiNote && midiNote}
+			</div>
+		</div>
+	)
+}
+
+function WhiteNote(props: {
+	leftPx: number
+	showMidiNote: boolean
+	midiNote: number
+}) {
+	const { leftPx, showMidiNote, midiNote } = props
+	const [hovering, events] = useHover()
+
+	const octave = Math.floor(midiNote / 12)
+	const isC = midiNote % 12 === 0
+
+	return (
+		<div
+			{...events}
+			style={{
+				border: "1px solid black",
+				boxSizing: "border-box",
+				height: height,
+				width: width,
+				background: hovering ? "gray" : "white",
+				position: "absolute",
+				top: 0,
+				left: leftPx,
+			}}
+		>
+			<div
+				style={{
+					position: "absolute",
+					bottom: 0,
+					width: "100%",
+					textAlign: "center",
+					fontSize: width * 0.6,
+				}}
+			>
+				{showMidiNote && midiNote}
+			</div>
+
+			{isC && (
+				<div
+					style={{
+						position: "absolute",
+						top: "100%",
+						width: "100%",
+						textAlign: "center",
+						fontSize: 12,
+					}}
+				>
+					{`C${octave - 1}`}
+				</div>
+			)}
+		</div>
+	)
+}
+
+class PianoScroller extends PureComponent<{
+	block: PianoBlockState
+	onUpdate: (block: BlockState) => void
+	children: JSX.Element
+}> {
 	private div = createRef<HTMLDivElement>()
 
 	render() {

@@ -163,6 +163,7 @@ function GuitarDots(props: { n: number }) {
 	)
 }
 
+// TODO: consolidate with PianoScroller?
 function GuitarScroller(props: {
 	block: GuitarBlockState
 	onUpdate: (block: BlockState) => void
