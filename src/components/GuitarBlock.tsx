@@ -66,18 +66,40 @@ function GuitarFretboard(props: {
 	block: GuitarBlockState
 	onUpdate: (block: BlockState) => void
 }) {
-	const boxes = range(1, frets + 1).map((n) => {
-		const i = n % 12
+	const { block, onUpdate } = props
+
+	// TODO: this is gross. onUpdate should have a separate id argument
+	const ref = useRef(block)
+	ref.current = block
+	const onToggleNote = useCallback(
+		(args: { stringN: number; fretN: number }) => {
+			const { stringN, fretN } = args
+			// TODO: Use an immutable helper function for this?
+			const block = { ...ref.current }
+			block.guitarNotes = { ...(block.guitarNotes || {}) }
+			block.guitarNotes[stringN] = { ...(block.guitarNotes[stringN] || {}) }
+			if (block.guitarNotes[stringN]![fretN]) {
+				delete block.guitarNotes[stringN]![fretN]
+			} else {
+				block.guitarNotes[stringN]![fretN] = true
+			}
+			onUpdate({ ...block })
+		},
+		[]
+	)
+
+	const boxes = range(1, frets + 1).map((fretN) => {
+		const i = fretN % 12
 		return (
 			<div
-				key={n}
+				key={fretN}
 				style={{
 					display: "inline-block",
 					verticalAlign: "top",
 					border: `1px solid ${fretColor}`,
 					boxSizing: "border-box",
 					height,
-					width: 25 + (frets - n),
+					width: 25 + (frets - fretN),
 					position: "relative",
 				}}
 			>
@@ -87,7 +109,7 @@ function GuitarFretboard(props: {
 					<div
 						style={{ fontSize: 12, lineHeight: "14px", textAlign: "center" }}
 					>
-						{n}
+						{fretN}
 					</div>
 				)}
 
@@ -104,8 +126,26 @@ function GuitarFretboard(props: {
 				>
 					{range(1, 7)
 						.reverse() // Delete this for Sean-mode
-						.map((n) => {
-							return <GuitarString n={n} />
+						.map((stringN) => {
+							let midiNote = 28
+							midiNote += (stringN - 1) * 5
+							if (stringN === 5) {
+								midiNote += 1
+							} else if (stringN === 6) {
+								midiNote += 2
+							}
+							midiNote += fretN
+
+							const selected = Boolean(block.guitarNotes?.[stringN]?.[fretN])
+
+							return (
+								<GuitarString
+									stringN={stringN}
+									fretN={fretN}
+									selected={selected}
+									onToggleNote={onToggleNote}
+								/>
+							)
 						})}
 				</div>
 			</div>
@@ -127,14 +167,30 @@ function GuitarFretboard(props: {
 }
 
 /** `n=6` is the low E string. */
-function GuitarString(props: { n: number }) {
-	const { n } = props
-	const thickness = n > 3 ? 2 : 1
+function GuitarString(props: {
+	stringN: number
+	fretN: number
+	selected: boolean
+	onToggleNote: (args: { stringN: number; fretN: number }) => void
+}) {
+	const { stringN, fretN, selected, onToggleNote } = props
+
+	const thickness = stringN > 3 ? 2 : 1
 
 	const [hovering, hoverEvents] = useHover()
 	const [active, activeEvents] = useActive()
 
-	const color = computeColor(highlightColor, { hovering, active })
+	const handleClick = useCallback(() => {
+		onToggleNote({ stringN, fretN })
+	}, [stringN, fretN])
+
+	let color = "transparent"
+	if (selected || hovering || active) {
+		color = computeColor(selected ? highlightColor : "white", {
+			hovering,
+			active,
+		})
+	}
 
 	return (
 		<div
@@ -146,6 +202,7 @@ function GuitarString(props: { n: number }) {
 				flexDirection: "column",
 				justifyContent: "space-around",
 			}}
+			onClick={handleClick}
 		>
 			<div
 				style={{
@@ -245,4 +302,17 @@ function GuitarScroller(props: {
 			{props.children}
 		</div>
 	)
+}
+
+function getMidiNote(args: { stringN: number; fretN: number }) {
+	const { stringN, fretN } = args
+	let midiNote = 28
+	midiNote += (stringN - 1) * 5
+	if (stringN === 5) {
+		midiNote += 1
+	} else if (stringN === 6) {
+		midiNote += 2
+	}
+	midiNote += fretN
+	return midiNote
 }

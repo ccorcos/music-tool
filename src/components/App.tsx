@@ -9,6 +9,7 @@ type AppState = {
 }
 
 const stateKey = "state2"
+
 function useAppState() {
 	const [state, setState] = useState<AppState>(
 		JSON.parse(localStorage.getItem(stateKey) as any) || {
