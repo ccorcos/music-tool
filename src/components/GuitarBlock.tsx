@@ -7,6 +7,9 @@ import { range } from "lodash"
 const height = 90
 const frets = 22
 
+const fretColor = "#aaa"
+const dotColor = "#aaa"
+
 export function GuitarBlock(props: {
 	block: GuitarBlockState
 	onUpdate: (block: BlockState) => void
@@ -51,7 +54,7 @@ function GuitarFretboard() {
 				style={{
 					display: "inline-block",
 					verticalAlign: "top",
-					border: "1px solid black",
+					border: `1px solid ${fretColor}`,
 					boxSizing: "border-box",
 					height,
 					width: 25 + (frets - n),
@@ -77,16 +80,20 @@ function GuitarFretboard() {
 						display: "flex",
 						flexDirection: "column",
 						justifyContent: "space-evenly",
+						marginTop: -5,
+						marginBottom: -5,
 					}}
 				>
 					{range(1, 7)
-						.reverse()
+						.reverse() // Delete this for Sean-mode
 						.map((n) => {
 							return (
 								<div
 									style={{
 										height: 0,
-										borderTop: `${Math.max(1, Math.floor(n / 2))}px solid gray`,
+										borderTop: `${n > 3 ? 2 : 1}px solid black`,
+										marginLeft: -1,
+										marginRight: -1,
 									}}
 								/>
 							)
@@ -133,7 +140,7 @@ function GuitarDots(props: { n: number }) {
 					<div
 						key={n}
 						style={{
-							background: "black",
+							background: dotColor,
 							height: 8,
 							width: 8,
 							borderRadius: 8,
