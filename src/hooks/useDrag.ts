@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 
 export type Point = { x: number; y: number }
 
@@ -64,6 +64,11 @@ export function useDrag(args: { onDragEnd?: (store: DraggingState) => void }) {
 	const stopListeners = useCallback(() => {
 		window.removeEventListener("mousemove", handleMouseMove)
 		window.removeEventListener("mouseup", handleMouseUp)
+	}, [])
+
+	// Cleanup just in case.
+	useEffect(() => {
+		return stopListeners
 	}, [])
 
 	const handleMouseDown = useCallback((e: React.MouseEvent<Element>) => {

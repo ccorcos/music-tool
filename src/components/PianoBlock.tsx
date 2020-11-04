@@ -1,9 +1,13 @@
-import React, { PureComponent, createRef } from "react"
+import React, { PureComponent, createRef, useCallback, useRef } from "react"
 import { OnMouseDown } from "../hooks/useDrag"
 import { PianoBlockState, BlockState } from "../state"
 import { throttle } from "lodash"
 import { Resizer } from "./Resizer"
 import { useHover } from "../hooks/useHover"
+import { useActive } from "../hooks/useActive"
+import { computeColor } from "../helpers/computeColor"
+
+const highlightColor = "#f34124"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -66,6 +70,24 @@ const heightFraction = 0.55
 function PianoKeyboard(props: PianoKeyboardProps) {
 	const { showMidiNote, block, onUpdate } = props
 
+	// This ref stuff feels kind of jank.
+	// TODO: plumb onUpdate into accepting a callback?
+	const ref = useRef(block)
+	ref.current = block
+	const onToggleNote = useCallback(
+		(midiNote: number) => {
+			const block = ref.current
+			const notes = { ...(block.notes || {}) }
+			if (notes[midiNote]) {
+				delete notes[midiNote]
+			} else {
+				notes[midiNote] = true
+			}
+			onUpdate({ ...block, notes })
+		},
+		[onUpdate]
+	)
+
 	const whiteNotes = Array(octaves * 7)
 		.fill(0)
 		.map((_, i) => {
@@ -88,6 +110,8 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 					leftPx={i * width}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
+					selected={Boolean(block.notes?.[midiNote])}
+					onToggleNote={onToggleNote}
 				/>
 			)
 		})
@@ -123,6 +147,8 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 					leftPx={offset}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
+					selected={Boolean(block.notes?.[midiNote])}
+					onToggleNote={onToggleNote}
 				/>
 			)
 		})
@@ -139,23 +165,37 @@ function BlackNote(props: {
 	leftPx: number
 	showMidiNote: boolean
 	midiNote: number
+	selected: boolean
+	onToggleNote: (midiNote: number) => void
 }) {
-	const { leftPx, showMidiNote, midiNote } = props
-	const [hovering, events] = useHover()
+	const { leftPx, showMidiNote, midiNote, selected, onToggleNote } = props
+	const [hovering, hoverEvents] = useHover()
+	const [active, activeEvents] = useActive()
+	const handleClick = useCallback(() => {
+		onToggleNote(midiNote)
+	}, [midiNote])
+
+	const color = computeColor(selected ? highlightColor : "black", {
+		active,
+		hovering,
+	})
+
 	return (
 		<div
-			{...events}
+			{...hoverEvents}
+			{...activeEvents}
 			style={{
 				border: "1px solid black",
 				boxSizing: "border-box",
 				height: height * heightFraction,
 				width: width * widthFraction,
 				marginBottom: height * (1 - heightFraction),
-				background: hovering ? "gray" : "black",
+				background: color,
 				position: "absolute",
 				top: 0,
 				left: leftPx,
 			}}
+			onClick={handleClick}
 		>
 			<div
 				style={{
@@ -177,26 +217,40 @@ function WhiteNote(props: {
 	leftPx: number
 	showMidiNote: boolean
 	midiNote: number
+	selected: boolean
+	onToggleNote: (midiNote: number) => void
 }) {
-	const { leftPx, showMidiNote, midiNote } = props
-	const [hovering, events] = useHover()
+	const { leftPx, showMidiNote, midiNote, selected, onToggleNote } = props
+	const [hovering, hoverEvents] = useHover()
+	const [active, activeEvents] = useActive()
+
+	const handleClick = useCallback(() => {
+		onToggleNote(midiNote)
+	}, [midiNote])
 
 	const octave = Math.floor(midiNote / 12)
 	const isC = midiNote % 12 === 0
 
+	const color = computeColor(selected ? highlightColor : "white", {
+		active,
+		hovering,
+	})
+
 	return (
 		<div
-			{...events}
+			{...hoverEvents}
+			{...activeEvents}
 			style={{
 				border: "1px solid black",
 				boxSizing: "border-box",
 				height: height,
 				width: width,
-				background: hovering ? "gray" : "white",
+				background: color,
 				position: "absolute",
 				top: 0,
 				left: leftPx,
 			}}
+			onClick={handleClick}
 		>
 			<div
 				style={{

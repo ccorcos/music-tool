@@ -27,7 +27,18 @@ git checkout master
 - [x] toolbar (reset state, new block)
 - [x] resizable blocks
 - [x] faster rebuild speed?
+
+TODO: guitar midinote selection
+
+- [ ] show note name / midinote label on hover
+- [ ] better onUpdate to accept an updater function.
+- [ ] onActive state
+- [ ] use chroma.js for color mixing
+
 - [ ] undo-redo
+
+- [ ] useGesture package?
+- [ ] useSpring package?
 
 - [ ] different types of music blocks
   - [ ] Piano

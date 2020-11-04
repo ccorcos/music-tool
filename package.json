@@ -13,6 +13,8 @@
 	"author": "",
 	"license": "MIT",
 	"dependencies": {
+		"@types/chroma-js": "^2.1.0",
+		"chroma-js": "^2.1.0",
 		"glamor": "^2.20.40",
 		"lodash": "^4.17.20",
 		"react": "^17.0.1",

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react"
+import React, { useState, useCallback, useRef } from "react"
 import { useDrag } from "../hooks/useDrag"
 import { BlockState } from "../state"
 import { PianoBlock } from "./PianoBlock"
@@ -8,46 +8,52 @@ type AppState = {
 	blocks: Array<BlockState>
 }
 
-function useAppState(): [AppState, (state: AppState) => void] {
+const stateKey = "state2"
+function useAppState() {
 	const [state, setState] = useState<AppState>(
-		JSON.parse(localStorage.getItem("state") as any) || {
+		JSON.parse(localStorage.getItem(stateKey) as any) || {
 			blocks: [{ id: "1", x: 100, y: 100 }],
 		}
 	)
-	return [
-		state,
-		(state: AppState) => {
-			localStorage.setItem("state", JSON.stringify(state))
+
+	const ref = useRef(state)
+	ref.current = state
+
+	const setAppState = useCallback(
+		(state: AppState | ((state: AppState) => AppState)) => {
+			if (typeof state === "function") {
+				state = state(ref.current)
+			}
+			localStorage.setItem(stateKey, JSON.stringify(state))
 			setState(state)
 		},
-	]
+		[]
+	)
+	return [state, setAppState] as const
 }
 
 export function App() {
 	const [state, setState] = useAppState()
 
-	const handleUpdateBlock = useCallback(
-		(block: BlockState) => {
-			setState({
-				...state,
-				blocks: state.blocks.map((b) => {
-					if (b.id === block.id) {
-						return block
-					} else {
-						return b
-					}
-				}),
-			})
-		},
-		[state.blocks]
-	)
+	const handleUpdateBlock = useCallback((block: BlockState) => {
+		setState((state) => ({
+			...state,
+			blocks: state.blocks.map((b) => {
+				if (b.id === block.id) {
+					return block
+				} else {
+					return b
+				}
+			}),
+		}))
+	}, [])
 
 	const handleReset = useCallback(() => {
 		setState({ blocks: [] })
 	}, [])
 
 	const handleNewPianoBlock = useCallback(() => {
-		setState({
+		setState((state) => ({
 			...state,
 			blocks: [
 				...state.blocks,
@@ -61,11 +67,11 @@ export function App() {
 					scrollLeft: 0,
 				},
 			],
-		})
-	}, [state.blocks])
+		}))
+	}, [])
 
 	const handleNewGuitarBlock = useCallback(() => {
-		setState({
+		setState((state) => ({
 			...state,
 			blocks: [
 				...state.blocks,
@@ -79,8 +85,8 @@ export function App() {
 					scrollLeft: 0,
 				},
 			],
-		})
-	}, [state.blocks])
+		}))
+	}, [])
 
 	return (
 		<div style={{ height: "100vh", width: "100vw" }}>

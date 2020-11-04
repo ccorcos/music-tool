@@ -9,8 +9,11 @@ import { GuitarBlockState, BlockState } from "../state"
 import { OnMouseDown } from "../hooks/useDrag"
 import { Resizer } from "./Resizer"
 import { range, throttle } from "lodash"
-import { ProgressPlugin } from "webpack"
-import { Block } from "./App"
+import { useHover } from "../hooks/useHover"
+import { useActive } from "../hooks/useActive"
+import { computeColor } from "../helpers/computeColor"
+
+const highlightColor = "green"
 
 const height = 90
 const frets = 22
@@ -87,6 +90,7 @@ function GuitarFretboard(props: {
 						{n}
 					</div>
 				)}
+
 				<div
 					style={{
 						position: "absolute",
@@ -96,24 +100,12 @@ function GuitarFretboard(props: {
 						bottom: 0,
 						display: "flex",
 						flexDirection: "column",
-						justifyContent: "space-evenly",
-						marginTop: -5,
-						marginBottom: -5,
 					}}
 				>
 					{range(1, 7)
 						.reverse() // Delete this for Sean-mode
 						.map((n) => {
-							return (
-								<div
-									style={{
-										height: 0,
-										borderTop: `${n > 3 ? 2 : 1}px solid black`,
-										marginLeft: -1,
-										marginRight: -1,
-									}}
-								/>
-							)
+							return <GuitarString n={n} />
 						})}
 				</div>
 			</div>
@@ -131,6 +123,52 @@ function GuitarFretboard(props: {
 				{boxes}
 			</div>
 		</GuitarScroller>
+	)
+}
+
+/** `n=6` is the low E string. */
+function GuitarString(props: { n: number }) {
+	const { n } = props
+	const thickness = n > 3 ? 2 : 1
+
+	const [hovering, hoverEvents] = useHover()
+	const [active, activeEvents] = useActive()
+
+	const color = computeColor(highlightColor, { hovering, active })
+
+	return (
+		<div
+			{...hoverEvents}
+			{...activeEvents}
+			style={{
+				flex: 1,
+				display: "flex",
+				flexDirection: "column",
+				justifyContent: "space-around",
+			}}
+		>
+			<div
+				style={{
+					height: 0,
+					borderTop: `${thickness}px solid black`,
+					marginLeft: -1,
+					marginRight: -1,
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+				}}
+			>
+				<div
+					style={{
+						marginTop: -thickness,
+						width: 12,
+						height: 12,
+						borderRadius: 12,
+						background: color,
+					}}
+				/>
+			</div>
+		</div>
 	)
 }
 
