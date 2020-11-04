@@ -2,6 +2,10 @@ import React from "react"
 import { GuitarBlockState, BlockState } from "../state"
 import { OnMouseDown } from "../hooks/useDrag"
 import { Resizer } from "./Resizer"
+import { range } from "lodash"
+
+const height = 90
+const frets = 22
 
 export function GuitarBlock(props: {
 	block: GuitarBlockState
@@ -14,11 +18,10 @@ export function GuitarBlock(props: {
 	const { block, onMouseDownDrag, dragging, onMouseDownResize } = props
 	return (
 		<div
-			onMouseDown={onMouseDownDrag}
 			style={{
 				position: "absolute",
 				width: block.width,
-				height: 120,
+				height: 144,
 				border: "2px solid black",
 				background: "white",
 				top: block.y,
@@ -33,7 +36,111 @@ export function GuitarBlock(props: {
 			>
 				Guitar
 			</div>
+			<GuitarFretboard />
 			<Resizer onMouseDownResize={onMouseDownResize} />
+		</div>
+	)
+}
+
+function GuitarFretboard() {
+	const boxes = range(1, frets + 1).map((n) => {
+		const i = n % 12
+		return (
+			<div
+				key={n}
+				style={{
+					display: "inline-block",
+					verticalAlign: "top",
+					border: "1px solid black",
+					boxSizing: "border-box",
+					height,
+					width: 25 + (frets - n),
+					position: "relative",
+				}}
+			>
+				{(i === 3 || i === 5 || i === 9) && <GuitarDots n={1} />}
+				{(i === 7 || i === 0) && <GuitarDots n={2} />}
+				{(i === 7 || i === 0 || i === 3 || i === 5 || i === 9) && (
+					<div
+						style={{ fontSize: 12, lineHeight: "14px", textAlign: "center" }}
+					>
+						{n}
+					</div>
+				)}
+				<div
+					style={{
+						position: "absolute",
+						top: 0,
+						left: 0,
+						right: 0,
+						bottom: 0,
+						display: "flex",
+						flexDirection: "column",
+						justifyContent: "space-evenly",
+					}}
+				>
+					{range(1, 7)
+						.reverse()
+						.map((n) => {
+							return (
+								<div
+									style={{
+										height: 0,
+										borderTop: `${Math.max(1, Math.floor(n / 2))}px solid gray`,
+									}}
+								/>
+							)
+						})}
+				</div>
+			</div>
+		)
+	})
+
+	return (
+		<div
+			style={{
+				position: "relative",
+				overflowX: "auto",
+				height: height * 1.25,
+			}}
+		>
+			<div
+				style={{
+					// width: 35 * 22, display: "flex" ,
+					whiteSpace: "nowrap",
+				}}
+			>
+				{boxes}
+			</div>
+		</div>
+	)
+}
+
+function GuitarDots(props: { n: number }) {
+	return (
+		<div
+			style={{
+				display: "flex",
+				height: "100%",
+				alignItems: "center",
+				flexDirection: "column",
+				justifyContent: "center",
+				gap: 8,
+			}}
+		>
+			{range(0, props.n).map((n) => {
+				return (
+					<div
+						key={n}
+						style={{
+							background: "black",
+							height: 8,
+							width: 8,
+							borderRadius: 8,
+						}}
+					/>
+				)
+			})}
 		</div>
 	)
 }

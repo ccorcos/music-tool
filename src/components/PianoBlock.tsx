@@ -110,7 +110,7 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 								top: "100%",
 								width: "100%",
 								textAlign: "center",
-								fontSize: width * 0.5,
+								fontSize: 12,
 							}}
 						>
 							{`C${octave - 1}`}
@@ -200,7 +200,7 @@ class PianoScroller extends PureComponent<
 				style={{
 					position: "relative",
 					overflowX: "auto",
-					height: height * 1.2,
+					height: height * 1.25,
 				}}
 				onScroll={this.handleScroll}
 			>
