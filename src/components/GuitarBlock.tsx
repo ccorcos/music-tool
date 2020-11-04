@@ -1,8 +1,16 @@
-import React from "react"
+import React, {
+	createRef,
+	useCallback,
+	useMemo,
+	useRef,
+	useEffect,
+} from "react"
 import { GuitarBlockState, BlockState } from "../state"
 import { OnMouseDown } from "../hooks/useDrag"
 import { Resizer } from "./Resizer"
-import { range } from "lodash"
+import { range, throttle } from "lodash"
+import { ProgressPlugin } from "webpack"
+import { Block } from "./App"
 
 const height = 90
 const frets = 22
@@ -18,7 +26,13 @@ export function GuitarBlock(props: {
 	onMouseDownResize: OnMouseDown
 	resizing: boolean
 }) {
-	const { block, onMouseDownDrag, dragging, onMouseDownResize } = props
+	const {
+		block,
+		onUpdate,
+		onMouseDownDrag,
+		dragging,
+		onMouseDownResize,
+	} = props
 	return (
 		<div
 			style={{
@@ -39,13 +53,16 @@ export function GuitarBlock(props: {
 			>
 				Guitar
 			</div>
-			<GuitarFretboard />
+			<GuitarFretboard block={block} onUpdate={onUpdate} />
 			<Resizer onMouseDownResize={onMouseDownResize} />
 		</div>
 	)
 }
 
-function GuitarFretboard() {
+function GuitarFretboard(props: {
+	block: GuitarBlockState
+	onUpdate: (block: BlockState) => void
+}) {
 	const boxes = range(1, frets + 1).map((n) => {
 		const i = n % 12
 		return (
@@ -104,13 +121,7 @@ function GuitarFretboard() {
 	})
 
 	return (
-		<div
-			style={{
-				position: "relative",
-				overflowX: "auto",
-				height: height * 1.25,
-			}}
-		>
+		<GuitarScroller block={props.block} onUpdate={props.onUpdate}>
 			<div
 				style={{
 					// width: 35 * 22, display: "flex" ,
@@ -119,7 +130,7 @@ function GuitarFretboard() {
 			>
 				{boxes}
 			</div>
-		</div>
+		</GuitarScroller>
 	)
 }
 
@@ -148,6 +159,51 @@ function GuitarDots(props: { n: number }) {
 					/>
 				)
 			})}
+		</div>
+	)
+}
+
+function GuitarScroller(props: {
+	block: GuitarBlockState
+	onUpdate: (block: BlockState) => void
+	children: JSX.Element
+}) {
+	const div = createRef<HTMLDivElement>()
+
+	const block = useRef(props.block)
+	block.current = props.block
+
+	const setScrollLeft = useMemo(() => {
+		return throttle((scrollLeft: number) => {
+			props.onUpdate({
+				...block.current,
+				scrollLeft,
+			})
+		}, 100)
+	}, [])
+
+	const handleScroll = useCallback(
+		(e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+			setScrollLeft(e.currentTarget!.scrollLeft)
+		},
+		[]
+	)
+
+	useEffect(() => {
+		div.current!.scrollLeft = props.block.scrollLeft || 0
+	}, [])
+
+	return (
+		<div
+			ref={div}
+			style={{
+				position: "relative",
+				overflowX: "auto",
+				height: height * 1.25,
+			}}
+			onScroll={handleScroll}
+		>
+			{props.children}
 		</div>
 	)
 }

@@ -59,6 +59,7 @@ export function App() {
 					notes: [],
 					shadow: false,
 					width: 220,
+					scrollLeft: 0,
 				},
 			],
 		})
@@ -75,9 +76,9 @@ export function App() {
 					y: Math.random() * 500,
 					type: "guitar",
 					notes: [],
-					frets: [],
 					shadow: false,
 					width: 200,
+					scrollLeft: 0,
 				},
 			],
 		})
