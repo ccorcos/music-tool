@@ -5,8 +5,7 @@ import { throttle } from "lodash"
 import { Resizer } from "./Resizer"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
-import { computeColor, mixColor } from "../helpers/color"
-import { getNoteColor } from "../helpers/noteGroups"
+import { getNoteColor, getNoteColors } from "../helpers/noteGroups"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -124,11 +123,11 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			// If the note is already selected for a given note group, show that color.
 			// Otherwise, show the current note color.
 			const groupMembership = block.notes?.[midiNote]
-			const { selected, color } = getNoteColor({
+			const colors = getNoteColors({
 				groupMembership,
 				noteGroups,
-				currentNoteGroup,
 			})
+			const selected = Boolean(groupMembership?.[currentNoteGroup.id])
 
 			return (
 				<WhiteNote
@@ -138,7 +137,8 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 					midiNote={midiNote}
 					selected={selected}
 					onToggleNote={onToggleNote}
-					noteColor={color}
+					noteColors={colors}
+					currentColor={currentNoteGroup.color}
 				/>
 			)
 		})
@@ -171,11 +171,11 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			// If the note is already selected for a given note group, show that color.
 			// Otherwise, show the current note color.
 			const groupMembership = block.notes?.[midiNote]
-			const { selected, color } = getNoteColor({
+			const colors = getNoteColors({
 				groupMembership,
 				noteGroups,
-				currentNoteGroup,
 			})
+			const selected = Boolean(groupMembership?.[currentNoteGroup.id])
 
 			return (
 				<BlackNote
@@ -183,9 +183,10 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 					leftPx={offset}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
-					selected={selected}
 					onToggleNote={onToggleNote}
-					noteColor={color}
+					selected={selected}
+					noteColors={colors}
+					currentColor={currentNoteGroup.color}
 				/>
 			)
 		})
@@ -203,8 +204,9 @@ function BlackNote(props: {
 	showMidiNote: boolean
 	midiNote: number
 	selected: boolean
+	currentColor: string
 	onToggleNote: (midiNote: number) => void
-	noteColor: string
+	noteColors: Array<string>
 }) {
 	const {
 		leftPx,
@@ -212,7 +214,8 @@ function BlackNote(props: {
 		midiNote,
 		selected,
 		onToggleNote,
-		noteColor,
+		noteColors,
+		currentColor,
 	} = props
 	const [hovering, hoverEvents] = useHover()
 	const [active, activeEvents] = useActive()
@@ -220,12 +223,13 @@ function BlackNote(props: {
 		onToggleNote(midiNote)
 	}, [midiNote, onToggleNote])
 
-	const color = computeColor({
-		onColor: noteColor,
-		offColor: "black",
-		on: selected,
-		hovering,
+	const color = getNoteColor({
+		selected,
+		currentColor,
+		noteColors,
 		active,
+		hovering,
+		baseColor: "black",
 	})
 
 	return (
@@ -267,7 +271,8 @@ function WhiteNote(props: {
 	midiNote: number
 	selected: boolean
 	onToggleNote: (midiNote: number) => void
-	noteColor: string
+	currentColor: string
+	noteColors: Array<string>
 }) {
 	const {
 		leftPx,
@@ -275,7 +280,8 @@ function WhiteNote(props: {
 		midiNote,
 		selected,
 		onToggleNote,
-		noteColor,
+		currentColor,
+		noteColors,
 	} = props
 	const [hovering, hoverEvents] = useHover()
 	const [active, activeEvents] = useActive()
@@ -287,12 +293,13 @@ function WhiteNote(props: {
 	const octave = Math.floor(midiNote / 12)
 	const isC = midiNote % 12 === 0
 
-	const color = computeColor({
-		onColor: noteColor,
-		offColor: "white",
-		on: selected,
-		hovering,
+	const color = getNoteColor({
+		selected,
+		currentColor,
+		noteColors,
 		active,
+		hovering,
+		baseColor: "white",
 	})
 
 	return (

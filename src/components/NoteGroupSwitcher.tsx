@@ -41,12 +41,12 @@ function NoteGroupSwatch(props: {
 
 	// No hover effect when selected.
 	const baseColor = mixColor(props.noteGroup.color, "white", 0.1)
+
 	const color = props.selected
 		? baseColor
 		: computeColor({
-				onColor: mixColor(props.noteGroup.color, "white", 0.1),
-				offColor: mixColor(props.noteGroup.color, "white", 0.6),
-				on: props.selected,
+				baseColor: mixColor(props.noteGroup.color, "white", 0.5),
+				mixColor: mixColor(props.noteGroup.color, "white", 1),
 				active,
 				hovering,
 		  })

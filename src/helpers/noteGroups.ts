@@ -1,32 +1,56 @@
 import { GroupMembership, NoteGroup, NoteGroups } from "../state"
-import { mixColor } from "./color"
+import { computeColor, mixColors } from "./color"
 
-export function getNoteColor(args: {
+export function getNoteColors(args: {
 	groupMembership: GroupMembership | undefined
 	noteGroups: NoteGroups
-	currentNoteGroup: NoteGroup
 }) {
-	const { groupMembership, noteGroups, currentNoteGroup } = args
-	const selected = Boolean(
-		groupMembership && Object.keys(groupMembership).length > 0
-	)
-	let color = currentNoteGroup.color
-	let colors = [currentNoteGroup.color]
+	const { groupMembership, noteGroups } = args
 	if (groupMembership && Object.keys(groupMembership).length > 0) {
-		colors = Object.keys(groupMembership).map((groupId) => {
+		return Object.keys(groupMembership).map((groupId) => {
 			return noteGroups[groupId].color
 		})
-		if (colors.length === 1) {
-			color = colors[0]
-		} else {
-			color = colors
-				.slice(1)
-				.reduce(
-					(a, b, i) => mixColor(a, b, 1 - (i + 1 / colors.length)),
-					colors[0]
-				)
-		}
+	}
+	return []
+}
+
+export function getNoteColor(args: {
+	selected: boolean
+	currentColor: string
+	noteColors: Array<string>
+	active: boolean
+	hovering: boolean
+	baseColor: string
+}) {
+	const {
+		selected,
+		currentColor,
+		noteColors,
+		active,
+		hovering,
+		baseColor,
+	} = args
+	let base = noteColors
+	let mix = noteColors
+	if (selected) {
+		// If selected, remove the color from the mix..
+		mix = mix.filter((color) => color !== currentColor)
+	} else {
+		// If not selected, add current color to the mix.
+		mix = [...mix, currentColor]
 	}
 
-	return { selected, color, colors }
+	if (base.length === 0) {
+		base = [selected ? currentColor : baseColor]
+	}
+	if (mix.length === 0) {
+		mix = [selected ? baseColor : currentColor]
+	}
+	const color = computeColor({
+		baseColor: mixColors(...base),
+		mixColor: mixColors(...mix),
+		hovering,
+		active,
+	})
+	return color
 }

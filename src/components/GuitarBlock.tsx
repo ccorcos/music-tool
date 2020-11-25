@@ -11,8 +11,8 @@ import { Resizer } from "./Resizer"
 import { range, throttle } from "lodash"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
-import { computeColor } from "../helpers/color"
-import { getNoteColor } from "../helpers/noteGroups"
+import { computeColor, mixColors } from "../helpers/color"
+import { getNoteColor, getNoteColors } from "../helpers/noteGroups"
 
 const height = 90
 const frets = 22
@@ -157,11 +157,11 @@ function GuitarFretboard(props: {
 							// If the note is already selected for a given note group, show that color.
 							// Otherwise, show the current note color.
 							const groupMembership = block.guitarNotes?.[stringN]?.[fretN]
-							const { selected, color } = getNoteColor({
+							const colors = getNoteColors({
 								groupMembership,
 								noteGroups,
-								currentNoteGroup,
 							})
+							const selected = Boolean(groupMembership?.[currentNoteGroup.id])
 
 							return (
 								<GuitarString
@@ -169,7 +169,8 @@ function GuitarFretboard(props: {
 									fretN={fretN}
 									selected={selected}
 									onToggleNote={onToggleNote}
-									noteColor={color}
+									noteColors={colors}
+									currentColor={currentNoteGroup.color}
 								/>
 							)
 						})}
@@ -198,9 +199,17 @@ function GuitarString(props: {
 	fretN: number
 	selected: boolean
 	onToggleNote: (args: { stringN: number; fretN: number }) => void
-	noteColor: string
+	noteColors: Array<string>
+	currentColor: string
 }) {
-	const { stringN, fretN, selected, onToggleNote, noteColor } = props
+	const {
+		stringN,
+		fretN,
+		selected,
+		onToggleNote,
+		noteColors,
+		currentColor,
+	} = props
 
 	const thickness = stringN > 3 ? 2 : 1
 
@@ -212,13 +221,14 @@ function GuitarString(props: {
 	}, [stringN, fretN, onToggleNote])
 
 	let color = "transparent"
-	if (selected || hovering || active) {
-		color = computeColor({
-			onColor: noteColor,
-			offColor: "white",
-			on: selected,
-			hovering,
+	if (selected || hovering || active || noteColors.length) {
+		color = getNoteColor({
+			selected,
+			currentColor,
+			noteColors,
 			active,
+			hovering,
+			baseColor: "white",
 		})
 	}
 
