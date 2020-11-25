@@ -12,6 +12,7 @@ import { range, throttle } from "lodash"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
 import { computeColor } from "../helpers/color"
+import { getNoteColor } from "../helpers/noteGroups"
 
 const height = 90
 const frets = 22
@@ -75,7 +76,7 @@ function GuitarFretboard(props: {
 	currentNoteGroup: NoteGroup
 	noteGroups: NoteGroups
 }) {
-	const { block, onUpdate, currentNoteGroup } = props
+	const { block, onUpdate, currentNoteGroup, noteGroups } = props
 
 	// TODO: this is gross. onUpdate should have a separate id argument
 	const ref = useRef(block)
@@ -88,10 +89,17 @@ function GuitarFretboard(props: {
 			const block = { ...ref.current }
 			block.guitarNotes = { ...(block.guitarNotes || {}) }
 			block.guitarNotes[stringN] = { ...(block.guitarNotes[stringN] || {}) }
-			if (block.guitarNotes[stringN]![fretN]) {
+
+			const groupMembership = { ...block.guitarNotes[stringN]![fretN] }
+			if (groupMembership[currentNoteGroup.id]) {
+				delete groupMembership[currentNoteGroup.id]
+			} else {
+				groupMembership[currentNoteGroup.id] = true
+			}
+			if (Object.keys(groupMembership).length === 0) {
 				delete block.guitarNotes[stringN]![fretN]
 			} else {
-				block.guitarNotes[stringN]![fretN] = currentNoteGroup.id
+				block.guitarNotes[stringN]![fretN] = groupMembership
 			}
 			onUpdate({ ...block })
 		},
@@ -148,19 +156,20 @@ function GuitarFretboard(props: {
 
 							// If the note is already selected for a given note group, show that color.
 							// Otherwise, show the current note color.
-
-							const noteGroupId = block.guitarNotes?.[stringN]?.[fretN]
-							const noteGroup = noteGroupId
-								? props.noteGroups[noteGroupId]
-								: currentNoteGroup
+							const groupMembership = block.guitarNotes?.[stringN]?.[fretN]
+							const { selected, color } = getNoteColor({
+								groupMembership,
+								noteGroups,
+								currentNoteGroup,
+							})
 
 							return (
 								<GuitarString
 									stringN={stringN}
 									fretN={fretN}
-									selected={Boolean(noteGroupId)}
+									selected={selected}
 									onToggleNote={onToggleNote}
-									noteColor={noteGroup.color}
+									noteColor={color}
 								/>
 							)
 						})}

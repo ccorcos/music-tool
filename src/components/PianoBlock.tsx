@@ -5,7 +5,8 @@ import { throttle } from "lodash"
 import { Resizer } from "./Resizer"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
-import { computeColor } from "../helpers/color"
+import { computeColor, mixColor } from "../helpers/color"
+import { getNoteColor } from "../helpers/noteGroups"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -88,10 +89,16 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 		(midiNote: number) => {
 			const block = ref.current
 			const notes = { ...(block.notes || {}) }
-			if (notes[midiNote]) {
+			const groupMembership = { ...notes[midiNote] }
+			if (groupMembership[currentNoteGroup.id]) {
+				delete groupMembership[currentNoteGroup.id]
+			} else {
+				groupMembership[currentNoteGroup.id] = true
+			}
+			if (Object.keys(groupMembership).length === 0) {
 				delete notes[midiNote]
 			} else {
-				notes[midiNote] = currentNoteGroup.id
+				notes[midiNote] = groupMembership
 			}
 			onUpdate({ ...block, notes })
 		},
@@ -116,10 +123,12 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 
 			// If the note is already selected for a given note group, show that color.
 			// Otherwise, show the current note color.
-			const noteGroupId = block.notes?.[midiNote]
-			const noteGroup = noteGroupId
-				? props.noteGroups[noteGroupId]
-				: currentNoteGroup
+			const groupMembership = block.notes?.[midiNote]
+			const { selected, color } = getNoteColor({
+				groupMembership,
+				noteGroups,
+				currentNoteGroup,
+			})
 
 			return (
 				<WhiteNote
@@ -127,9 +136,9 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 					leftPx={i * width}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
-					selected={Boolean(noteGroupId)}
+					selected={selected}
 					onToggleNote={onToggleNote}
-					noteColor={noteGroup.color}
+					noteColor={color}
 				/>
 			)
 		})
@@ -161,19 +170,22 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 
 			// If the note is already selected for a given note group, show that color.
 			// Otherwise, show the current note color.
-			const noteGroupId = block.notes?.[midiNote]
-			const noteGroup = noteGroupId
-				? props.noteGroups[noteGroupId]
-				: currentNoteGroup
+			const groupMembership = block.notes?.[midiNote]
+			const { selected, color } = getNoteColor({
+				groupMembership,
+				noteGroups,
+				currentNoteGroup,
+			})
+
 			return (
 				<BlackNote
 					key={`black-${i}`}
 					leftPx={offset}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
-					selected={Boolean(noteGroupId)}
+					selected={selected}
 					onToggleNote={onToggleNote}
-					noteColor={noteGroup.color}
+					noteColor={color}
 				/>
 			)
 		})

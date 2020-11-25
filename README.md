@@ -43,6 +43,8 @@ TODO: guitar midinote selection
 
 - [ ] different types of music blocks
   - paint notes in different colors.
+    - show/hide certain groups
+    - more than one group per note. mix colors together?
   - guitar
     - in all positions
     - in all octaves

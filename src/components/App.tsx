@@ -5,7 +5,7 @@ import { PianoBlock } from "./PianoBlock"
 import { GuitarBlock } from "./GuitarBlock"
 import { NoteGroupSwitcher } from "./NoteGroupSwitcher"
 
-const stateKey = "state6"
+const stateKey = "state7"
 
 const initialState: AppState = {
 	blocks: [],
@@ -14,6 +14,7 @@ const initialState: AppState = {
 		"1": { id: "1", color: "#6060f4" },
 		"2": { id: "2", color: "#2ca82c" },
 		"3": { id: "3", color: "#dd5c5c" },
+		"4": { id: "4", color: "#ead542" },
 	},
 }
 

@@ -12,16 +12,22 @@ export type NoteGroups = {
 	[id in NoteGroupId]: NoteGroup
 }
 
+export type GroupMembership = {
+	[id in NoteGroupId]: true
+}
+
 export type PianoBlockState = BlockStateBase & {
 	type: "piano"
 	// TODO: pianoNotes
-	notes?: { [midiNote: number]: NoteGroupId | undefined }
+	notes?: { [midiNote: number]: GroupMembership | undefined }
 }
 
 export type GuitarBlockState = BlockStateBase & {
 	type: "guitar"
 	guitarNotes?: {
-		[stringN: number]: { [fretN: number]: NoteGroupId | undefined } | undefined
+		[stringN: number]:
+			| { [fretN: number]: GroupMembership | undefined }
+			| undefined
 	}
 }
 
