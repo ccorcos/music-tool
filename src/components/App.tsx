@@ -1,18 +1,19 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { useDrag } from "../hooks/useDrag"
-import { AppState, BlockState } from "../state"
+import { AppState, BlockState, NoteGroup, NoteGroups } from "../state"
 import { PianoBlock } from "./PianoBlock"
 import { GuitarBlock } from "./GuitarBlock"
+import { NoteGroupSwitcher } from "./NoteGroupSwitcher"
 
-const stateKey = "state3"
+const stateKey = "state6"
 
 const initialState: AppState = {
 	blocks: [],
-	currentNoteGroup: "1",
+	currentNoteGroupId: "1",
 	noteGroups: {
-		"1": { color: "red" },
-		"2": { color: "green" },
-		"3": { color: "blue" },
+		"1": { id: "1", color: "#6060f4" },
+		"2": { id: "2", color: "#2ca82c" },
+		"3": { id: "3", color: "#dd5c5c" },
 	},
 }
 
@@ -88,18 +89,38 @@ export function App() {
 		}))
 	}, [])
 
+	const handleSetCurrentNoteGroupId = useCallback(
+		(currentNoteGroupId: string) => {
+			setState((state) => ({
+				...state,
+				currentNoteGroupId,
+			}))
+		},
+		[]
+	)
+
 	return (
 		<div style={{ height: "100vh", width: "100vw" }}>
 			<div style={{ padding: "1em", display: "flex", gap: "0.5em" }}>
 				<button onClick={handleNewPianoBlock}>Piano Block</button>
 				<button onClick={handleNewGuitarBlock}>Guitar Block</button>
-				<div style={{ width: 24 }}></div>
+				<NoteGroupSwitcher
+					noteGroups={state.noteGroups}
+					currentNoteGroupId={state.currentNoteGroupId}
+					onSetCurrentNoteGroupId={handleSetCurrentNoteGroupId}
+				/>
 				<div style={{ flex: 1 }}></div>
 				<button onClick={handleReset}>Reset</button>
 			</div>
 			{state.blocks.map((block) => {
 				return (
-					<Block key={block.id} block={block} onUpdate={handleUpdateBlock} />
+					<Block
+						key={block.id}
+						block={block}
+						onUpdate={handleUpdateBlock}
+						currentNoteGroup={state.noteGroups[state.currentNoteGroupId]}
+						noteGroups={state.noteGroups}
+					/>
 				)
 			})}
 		</div>
@@ -109,6 +130,8 @@ export function App() {
 export function Block(props: {
 	block: BlockState
 	onUpdate: (block: BlockState) => void
+	currentNoteGroup: NoteGroup
+	noteGroups: NoteGroups
 }) {
 	const [dragBlock, onMouseDownDrag, dragging] = useDragBlock({
 		block: props.block,
@@ -129,6 +152,8 @@ export function Block(props: {
 				dragging={dragging}
 				onMouseDownResize={onMouseDownResize}
 				resizing={resizing}
+				currentNoteGroup={props.currentNoteGroup}
+				noteGroups={props.noteGroups}
 			/>
 		)
 	} else if (block.type === "guitar") {
@@ -140,6 +165,8 @@ export function Block(props: {
 				dragging={dragging}
 				onMouseDownResize={onMouseDownResize}
 				resizing={resizing}
+				currentNoteGroup={props.currentNoteGroup}
+				noteGroups={props.noteGroups}
 			/>
 		)
 	} else {

@@ -7,7 +7,7 @@ type BlockStateBase = {
 }
 
 type NoteGroupId = string
-export type NoteGroup = { color: string }
+export type NoteGroup = { id: string; color: string }
 export type NoteGroups = {
 	[id in NoteGroupId]: NoteGroup
 }
@@ -29,6 +29,6 @@ export type BlockState = PianoBlockState | GuitarBlockState
 
 export type AppState = {
 	blocks: Array<BlockState>
-	currentNoteGroup: NoteGroupId
+	currentNoteGroupId: NoteGroupId
 	noteGroups: NoteGroups
 }

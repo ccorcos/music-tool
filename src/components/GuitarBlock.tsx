@@ -5,15 +5,13 @@ import React, {
 	useRef,
 	useEffect,
 } from "react"
-import { GuitarBlockState, BlockState } from "../state"
+import { GuitarBlockState, BlockState, NoteGroup, NoteGroups } from "../state"
 import { OnMouseDown } from "../hooks/useDrag"
 import { Resizer } from "./Resizer"
 import { range, throttle } from "lodash"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
-import { computeColor } from "../helpers/computeColor"
-
-const highlightColor = "green"
+import { computeColor } from "../helpers/color"
 
 const height = 90
 const frets = 22
@@ -28,6 +26,8 @@ export function GuitarBlock(props: {
 	dragging: boolean
 	onMouseDownResize: OnMouseDown
 	resizing: boolean
+	currentNoteGroup: NoteGroup
+	noteGroups: NoteGroups
 }) {
 	const {
 		block,
@@ -35,6 +35,8 @@ export function GuitarBlock(props: {
 		onMouseDownDrag,
 		dragging,
 		onMouseDownResize,
+		currentNoteGroup,
+		noteGroups,
 	} = props
 	return (
 		<div
@@ -56,7 +58,12 @@ export function GuitarBlock(props: {
 			>
 				Guitar
 			</div>
-			<GuitarFretboard block={block} onUpdate={onUpdate} />
+			<GuitarFretboard
+				block={block}
+				onUpdate={onUpdate}
+				currentNoteGroup={currentNoteGroup}
+				noteGroups={noteGroups}
+			/>
 			<Resizer onMouseDownResize={onMouseDownResize} />
 		</div>
 	)
@@ -65,12 +72,15 @@ export function GuitarBlock(props: {
 function GuitarFretboard(props: {
 	block: GuitarBlockState
 	onUpdate: (block: BlockState) => void
+	currentNoteGroup: NoteGroup
+	noteGroups: NoteGroups
 }) {
-	const { block, onUpdate } = props
+	const { block, onUpdate, currentNoteGroup } = props
 
 	// TODO: this is gross. onUpdate should have a separate id argument
 	const ref = useRef(block)
 	ref.current = block
+
 	const onToggleNote = useCallback(
 		(args: { stringN: number; fretN: number }) => {
 			const { stringN, fretN } = args
@@ -81,11 +91,11 @@ function GuitarFretboard(props: {
 			if (block.guitarNotes[stringN]![fretN]) {
 				delete block.guitarNotes[stringN]![fretN]
 			} else {
-				block.guitarNotes[stringN]![fretN] = true
+				block.guitarNotes[stringN]![fretN] = currentNoteGroup.id
 			}
 			onUpdate({ ...block })
 		},
-		[]
+		[currentNoteGroup.id]
 	)
 
 	const boxes = range(1, frets + 1).map((fretN) => {
@@ -136,14 +146,21 @@ function GuitarFretboard(props: {
 							}
 							midiNote += fretN
 
-							const selected = Boolean(block.guitarNotes?.[stringN]?.[fretN])
+							// If the note is already selected for a given note group, show that color.
+							// Otherwise, show the current note color.
+
+							const noteGroupId = block.guitarNotes?.[stringN]?.[fretN]
+							const noteGroup = noteGroupId
+								? props.noteGroups[noteGroupId]
+								: currentNoteGroup
 
 							return (
 								<GuitarString
 									stringN={stringN}
 									fretN={fretN}
-									selected={selected}
+									selected={Boolean(noteGroupId)}
 									onToggleNote={onToggleNote}
+									noteColor={noteGroup.color}
 								/>
 							)
 						})}
@@ -172,8 +189,9 @@ function GuitarString(props: {
 	fretN: number
 	selected: boolean
 	onToggleNote: (args: { stringN: number; fretN: number }) => void
+	noteColor: string
 }) {
-	const { stringN, fretN, selected, onToggleNote } = props
+	const { stringN, fretN, selected, onToggleNote, noteColor } = props
 
 	const thickness = stringN > 3 ? 2 : 1
 
@@ -182,11 +200,14 @@ function GuitarString(props: {
 
 	const handleClick = useCallback(() => {
 		onToggleNote({ stringN, fretN })
-	}, [stringN, fretN])
+	}, [stringN, fretN, onToggleNote])
 
 	let color = "transparent"
 	if (selected || hovering || active) {
-		color = computeColor(selected ? highlightColor : "white", {
+		color = computeColor({
+			onColor: noteColor,
+			offColor: "white",
+			on: selected,
 			hovering,
 			active,
 		})

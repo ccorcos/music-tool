@@ -1,13 +1,11 @@
 import React, { PureComponent, createRef, useCallback, useRef } from "react"
 import { OnMouseDown } from "../hooks/useDrag"
-import { PianoBlockState, BlockState } from "../state"
+import { PianoBlockState, BlockState, NoteGroup, NoteGroups } from "../state"
 import { throttle } from "lodash"
 import { Resizer } from "./Resizer"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
-import { computeColor } from "../helpers/computeColor"
-
-const highlightColor = "#f34124"
+import { computeColor } from "../helpers/color"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -16,6 +14,8 @@ export function PianoBlock(props: {
 	dragging: boolean
 	onMouseDownResize: OnMouseDown
 	resizing: boolean
+	currentNoteGroup: NoteGroup
+	noteGroups: NoteGroups
 }) {
 	const {
 		block,
@@ -24,6 +24,8 @@ export function PianoBlock(props: {
 		dragging,
 		onMouseDownResize,
 		resizing,
+		currentNoteGroup,
+		noteGroups,
 	} = props
 	return (
 		<div
@@ -46,7 +48,13 @@ export function PianoBlock(props: {
 				Piano
 			</div>
 			<PianoScroller block={block} onUpdate={onUpdate}>
-				<PianoKeyboard block={block} onUpdate={onUpdate} showMidiNote={false} />
+				<PianoKeyboard
+					block={block}
+					onUpdate={onUpdate}
+					showMidiNote={false}
+					currentNoteGroup={currentNoteGroup}
+					noteGroups={noteGroups}
+				/>
 			</PianoScroller>
 			<Resizer onMouseDownResize={onMouseDownResize} />
 		</div>
@@ -57,6 +65,8 @@ type PianoKeyboardProps = {
 	block: PianoBlockState
 	onUpdate: (block: BlockState) => void
 	showMidiNote: boolean
+	currentNoteGroup: NoteGroup
+	noteGroups: NoteGroups
 }
 
 const octaves = 8
@@ -68,7 +78,7 @@ const widthFraction = 0.5
 const heightFraction = 0.55
 
 function PianoKeyboard(props: PianoKeyboardProps) {
-	const { showMidiNote, block, onUpdate } = props
+	const { showMidiNote, block, onUpdate, currentNoteGroup, noteGroups } = props
 
 	// This ref stuff feels kind of jank.
 	// TODO: plumb onUpdate into accepting a callback?
@@ -81,11 +91,11 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			if (notes[midiNote]) {
 				delete notes[midiNote]
 			} else {
-				notes[midiNote] = true
+				notes[midiNote] = currentNoteGroup.id
 			}
 			onUpdate({ ...block, notes })
 		},
-		[onUpdate]
+		[onUpdate, currentNoteGroup.id]
 	)
 
 	const whiteNotes = Array(octaves * 7)
@@ -104,14 +114,22 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			const octave = Math.floor(i / 7)
 			const midiNote = octave * 12 + pianoKeyIndex
 
+			// If the note is already selected for a given note group, show that color.
+			// Otherwise, show the current note color.
+			const noteGroupId = block.notes?.[midiNote]
+			const noteGroup = noteGroupId
+				? props.noteGroups[noteGroupId]
+				: currentNoteGroup
+
 			return (
 				<WhiteNote
 					key={`white-${i}`}
 					leftPx={i * width}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
-					selected={Boolean(block.notes?.[midiNote])}
+					selected={Boolean(noteGroupId)}
 					onToggleNote={onToggleNote}
+					noteColor={noteGroup.color}
 				/>
 			)
 		})
@@ -141,14 +159,21 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 			const octaveOffset = octave * width * 7
 			const offset = octaveOffset + keyOffset
 
+			// If the note is already selected for a given note group, show that color.
+			// Otherwise, show the current note color.
+			const noteGroupId = block.notes?.[midiNote]
+			const noteGroup = noteGroupId
+				? props.noteGroups[noteGroupId]
+				: currentNoteGroup
 			return (
 				<BlackNote
 					key={`black-${i}`}
 					leftPx={offset}
 					showMidiNote={showMidiNote}
 					midiNote={midiNote}
-					selected={Boolean(block.notes?.[midiNote])}
+					selected={Boolean(noteGroupId)}
 					onToggleNote={onToggleNote}
+					noteColor={noteGroup.color}
 				/>
 			)
 		})
@@ -167,17 +192,28 @@ function BlackNote(props: {
 	midiNote: number
 	selected: boolean
 	onToggleNote: (midiNote: number) => void
+	noteColor: string
 }) {
-	const { leftPx, showMidiNote, midiNote, selected, onToggleNote } = props
+	const {
+		leftPx,
+		showMidiNote,
+		midiNote,
+		selected,
+		onToggleNote,
+		noteColor,
+	} = props
 	const [hovering, hoverEvents] = useHover()
 	const [active, activeEvents] = useActive()
 	const handleClick = useCallback(() => {
 		onToggleNote(midiNote)
-	}, [midiNote])
+	}, [midiNote, onToggleNote])
 
-	const color = computeColor(selected ? highlightColor : "black", {
-		active,
+	const color = computeColor({
+		onColor: noteColor,
+		offColor: "black",
+		on: selected,
 		hovering,
+		active,
 	})
 
 	return (
@@ -219,21 +255,32 @@ function WhiteNote(props: {
 	midiNote: number
 	selected: boolean
 	onToggleNote: (midiNote: number) => void
+	noteColor: string
 }) {
-	const { leftPx, showMidiNote, midiNote, selected, onToggleNote } = props
+	const {
+		leftPx,
+		showMidiNote,
+		midiNote,
+		selected,
+		onToggleNote,
+		noteColor,
+	} = props
 	const [hovering, hoverEvents] = useHover()
 	const [active, activeEvents] = useActive()
 
 	const handleClick = useCallback(() => {
 		onToggleNote(midiNote)
-	}, [midiNote])
+	}, [midiNote, onToggleNote])
 
 	const octave = Math.floor(midiNote / 12)
 	const isC = midiNote % 12 === 0
 
-	const color = computeColor(selected ? highlightColor : "white", {
-		active,
+	const color = computeColor({
+		onColor: noteColor,
+		offColor: "white",
+		on: selected,
 		hovering,
+		active,
 	})
 
 	return (
