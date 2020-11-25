@@ -6,17 +6,29 @@ type BlockStateBase = {
 	scrollLeft: number
 }
 
+type NoteGroupId = string
+export type NoteGroup = { color: string }
+export type NoteGroups = {
+	[id in NoteGroupId]: NoteGroup
+}
+
 export type PianoBlockState = BlockStateBase & {
 	type: "piano"
 	// TODO: pianoNotes
-	notes?: { [midiNote: number]: true | undefined }
+	notes?: { [midiNote: number]: NoteGroupId | undefined }
 }
 
 export type GuitarBlockState = BlockStateBase & {
 	type: "guitar"
 	guitarNotes?: {
-		[stringN: number]: { [fretN: number]: true | undefined } | undefined
+		[stringN: number]: { [fretN: number]: NoteGroupId | undefined } | undefined
 	}
 }
 
 export type BlockState = PianoBlockState | GuitarBlockState
+
+export type AppState = {
+	blocks: Array<BlockState>
+	currentNoteGroup: NoteGroupId
+	noteGroups: NoteGroups
+}

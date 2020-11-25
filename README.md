@@ -40,19 +40,24 @@ TODO: guitar midinote selection
 - [ ] useGesture package?
 - [ ] useSpring package?
 
+
 - [ ] different types of music blocks
-  - [ ] Piano
-   - [ ] Chord Name
-   - [ ] Octave labels
-   - [ ] Save scroll offset + initial offset
-   - [ ] Click notes
-   - [ ] Shadow notes
-   - [ ] Chord prediction
-   - [ ] block type drop-down
-  - [ ] Guitar
+  - paint notes in different colors.
+  - guitar
+    - in all positions
+    - in all octaves
+  - piano
+    - in all octaves
+
+  - later
+    - chord prediction
+    - wire modules together
+
   - [ ] Spiral
   - [ ] Circle
+  - [ ] Tab view
   - [ ] Metronome
   - [ ] Audio file
   - [ ] Text-based note
+
 

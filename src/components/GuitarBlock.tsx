@@ -125,7 +125,7 @@ function GuitarFretboard(props: {
 					}}
 				>
 					{range(1, 7)
-						.reverse() // Delete this for Sean-mode
+						.reverse() // Delete this for Sean-mode (right handed)
 						.map((stringN) => {
 							let midiNote = 28
 							midiNote += (stringN - 1) * 5

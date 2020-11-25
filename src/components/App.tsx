@@ -1,41 +1,40 @@
-import React, { useState, useCallback, useRef } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { useDrag } from "../hooks/useDrag"
-import { BlockState } from "../state"
+import { AppState, BlockState } from "../state"
 import { PianoBlock } from "./PianoBlock"
 import { GuitarBlock } from "./GuitarBlock"
 
-type AppState = {
-	blocks: Array<BlockState>
+const stateKey = "state3"
+
+const initialState: AppState = {
+	blocks: [],
+	currentNoteGroup: "1",
+	noteGroups: {
+		"1": { color: "red" },
+		"2": { color: "green" },
+		"3": { color: "blue" },
+	},
 }
 
-const stateKey = "state2"
+// const currentNoteGroup = createContext(initialState.currentNoteGroup)
+// const noteGroups = createContext(initialState.noteGroups)
 
 function useAppState() {
 	const [state, setState] = useState<AppState>(
-		JSON.parse(localStorage.getItem(stateKey) as any) || {
-			blocks: [{ id: "1", x: 100, y: 100 }],
-		}
+		JSON.parse(localStorage.getItem(stateKey) as any) || initialState
 	)
 
-	const ref = useRef(state)
-	ref.current = state
+	useEffect(() => {
+		localStorage.setItem(stateKey, JSON.stringify(state))
+	}, [state])
 
-	const setAppState = useCallback(
-		(state: AppState | ((state: AppState) => AppState)) => {
-			if (typeof state === "function") {
-				state = state(ref.current)
-			}
-			localStorage.setItem(stateKey, JSON.stringify(state))
-			setState(state)
-		},
-		[]
-	)
-	return [state, setAppState] as const
+	return [state, setState] as const
 }
 
 export function App() {
 	const [state, setState] = useAppState()
 
+	// TODO: pass id separately, handle delete, also updater arg.
 	const handleUpdateBlock = useCallback((block: BlockState) => {
 		setState((state) => ({
 			...state,
@@ -50,7 +49,7 @@ export function App() {
 	}, [])
 
 	const handleReset = useCallback(() => {
-		setState({ blocks: [] })
+		setState(initialState)
 	}, [])
 
 	const handleNewPianoBlock = useCallback(() => {
@@ -94,6 +93,7 @@ export function App() {
 			<div style={{ padding: "1em", display: "flex", gap: "0.5em" }}>
 				<button onClick={handleNewPianoBlock}>Piano Block</button>
 				<button onClick={handleNewGuitarBlock}>Guitar Block</button>
+				<div style={{ width: 24 }}></div>
 				<div style={{ flex: 1 }}></div>
 				<button onClick={handleReset}>Reset</button>
 			</div>
