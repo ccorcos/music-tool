@@ -6,6 +6,7 @@ import { Resizer } from "./Resizer"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
 import { getNoteColor, getNoteColors } from "../helpers/noteGroups"
+import { NoteColors } from "./NoteColors"
 
 export function PianoBlock(props: {
 	block: PianoBlockState
@@ -192,7 +193,13 @@ function PianoKeyboard(props: PianoKeyboardProps) {
 		})
 
 	return (
-		<div style={{ width: (width * octaves * 7) / 12 }}>
+		<div
+			style={{
+				width: (width * octaves * 7) / 12,
+				position: "relative",
+				top: height / 8,
+			}}
+		>
 			{whiteNotes}
 			{blackNotes}
 		</div>
@@ -261,6 +268,17 @@ function BlackNote(props: {
 			>
 				{showMidiNote && midiNote}
 			</div>
+
+			<NoteColors
+				noteColors={noteColors}
+				style={{
+					position: "absolute",
+					bottom: "100%",
+					marginBottom: 1,
+					width: "auto",
+				}}
+				size={4}
+			/>
 		</div>
 	)
 }
@@ -329,7 +347,11 @@ function WhiteNote(props: {
 			>
 				{showMidiNote && midiNote}
 			</div>
-
+			<NoteColors
+				noteColors={noteColors}
+				style={{ position: "absolute", bottom: "100%", marginBottom: 1 }}
+				size={4}
+			/>
 			{isC && (
 				<div
 					style={{
@@ -361,7 +383,7 @@ class PianoScroller extends PureComponent<{
 				style={{
 					position: "relative",
 					overflowX: "auto",
-					height: height * 1.25,
+					height: height * 1.375,
 				}}
 				onScroll={this.handleScroll}
 			>

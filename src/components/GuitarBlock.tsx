@@ -11,8 +11,8 @@ import { Resizer } from "./Resizer"
 import { range, throttle } from "lodash"
 import { useHover } from "../hooks/useHover"
 import { useActive } from "../hooks/useActive"
-import { computeColor, mixColors } from "../helpers/color"
 import { getNoteColor, getNoteColors } from "../helpers/noteGroups"
+import { NoteColors } from "./NoteColors"
 
 const height = 90
 const frets = 22
@@ -262,8 +262,20 @@ function GuitarString(props: {
 						height: 12,
 						borderRadius: 12,
 						background: color,
+						position: "relative",
 					}}
-				/>
+				>
+					<NoteColors
+						noteColors={noteColors}
+						style={{
+							position: "absolute",
+							top: 1,
+							right: "calc(100% + 1px)",
+							width: "auto",
+						}}
+						size={2}
+					/>
+				</div>
 			</div>
 		</div>
 	)

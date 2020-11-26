@@ -5,28 +5,17 @@ import { PianoBlock } from "./PianoBlock"
 import { GuitarBlock } from "./GuitarBlock"
 import { NoteGroupSwitcher } from "./NoteGroupSwitcher"
 
-const stateKey = "state8"
+const stateKey = "state9"
 
 const initialState: AppState = {
 	blocks: [],
 	currentNoteGroupId: "1",
 	noteGroups: {
-		"1": { id: "1", color: "#4e43ec" },
-		"2": { id: "2", color: "#ec428c" },
-		"3": { id: "3", color: "#e1ec42" },
-		"4": { id: "4", color: "#42eca2" },
+		"1": { id: "1", color: "#6060f4" },
+		"2": { id: "2", color: "#2ca82c" },
+		"3": { id: "3", color: "#dd5c5c" },
 	},
 }
-
-// https://pinetools.com/tetrad-color-scheme
-// #4e43ec
-// #ec428c
-// #e1ec42
-// #42eca2
-// #2718f5
-// #f51777
-// #e6f517
-// #17f595
 
 // const currentNoteGroup = createContext(initialState.currentNoteGroup)
 // const noteGroups = createContext(initialState.noteGroups)
