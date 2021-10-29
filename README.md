@@ -11,12 +11,28 @@ npm start
 
 ## Todo
 
-- [x] JSON state, persist to localStorage
-- [x] save scroll position
-- [x] draggable blocks
-- [x] toolbar (reset state, new block)
-- [x] resizable blocks
-- [x] faster rebuild speed?
+This thing with squares was fun. And it made me realize a few things.
+
+1. diatonic -> scale :: scale -> chord
+2. all the music helper functions can leverage this fact to be more reusable.
+
+As a primitive in this app, we will have scales, and then selections within those scales.
+
+Generally speaking in the UI:
+
+1. A scale is default REPEAT: true. A chord is default REPEAT: false.
+2. A scale is default NORMALIZE: true. A chord is default NORMALIZE: false.
+
+So what's next:
+
+- [ ] refactor music helper functions and write tests.
+- [ ] use the triplestore for working with the state of this app.
+- [ ] make a "squares" block for the music tool.
+
+
+---
+
+
 
 TODO: guitar midinote selection
 
