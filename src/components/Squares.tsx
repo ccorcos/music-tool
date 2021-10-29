@@ -1,6 +1,7 @@
 import { range } from "lodash"
 import React from "react"
 import * as m from "../helpers/music"
+import { hit, startTone } from "../helpers/sound"
 
 const size = 20
 
@@ -14,7 +15,8 @@ const noteStyle: React.CSSProperties = {
 }
 
 const scale = [m.root, m.minorThird, m.fourth, m.fifth, m.minorSeven]
-const startChord = [m.root, m.fifth, m.minorSeven]
+const startChord = [m.root, m.fifth]
+// const startChord = [m.root, m.fifth, m.minorSeven]
 
 function inc(scale: m.Scale, note: number, amount = 1) {
 	const index = scale.indexOf(note)
@@ -29,8 +31,15 @@ const chords = range(12 * 3).map((i) =>
 function Row(props: { chord?: m.Scale }) {
 	const chord = props.chord || []
 	return (
-		<div style={{ display: "flex" }}>
-			{range(3).map(() =>
+		<div
+			style={{ display: "flex" }}
+			onMouseEnter={() => {
+				chord.map((note) => {
+					hit(note + 12 * 4)
+				})
+			}}
+		>
+			{range(3).map((octave) =>
 				m.diatonic.map((note) => {
 					const color = (alt: string) =>
 						chord.includes(note)
@@ -45,9 +54,7 @@ function Row(props: { chord?: m.Scale }) {
 								borderColor: color("#eee"),
 								background: color("white"),
 							}}
-						>
-							{/* {note} */}
-						</div>
+						/>
 					)
 				})
 			)}
@@ -57,7 +64,7 @@ function Row(props: { chord?: m.Scale }) {
 
 export function Squares() {
 	return (
-		<div style={{ paddingTop: 80, paddingLeft: 40 }}>
+		<div style={{ paddingTop: 80, paddingLeft: 40 }} onMouseDown={startTone}>
 			<Row />
 			{chords.map((chord) => (
 				<Row chord={chord} />
