@@ -17,6 +17,7 @@ const noteStyle: React.CSSProperties = {
 
 const scale = [m.root, m.minorThird, m.fourth, m.fifth, m.minorSeven]
 const startChord = [m.root, m.fifth]
+// const startChord = [m.root, m.fourth, m.minorSeven]
 // const startChord = [m.root, m.fifth, m.minorSeven]
 
 function incAndWrap(scale: m.Scale, note: number, amount = 1) {
@@ -25,7 +26,7 @@ function incAndWrap(scale: m.Scale, note: number, amount = 1) {
 }
 
 // Move the chords my moving note positions.
-const chords = range(scale.length * 3, scale.length * 6).map(
+const chords = range(scale.length * 3, scale.length * 7).map(
 	(i) => m.rotateChord(scale, startChord, i)
 	// startChord.map((note) => incAndWrap(scale, note, i))
 )

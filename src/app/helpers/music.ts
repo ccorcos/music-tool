@@ -26,20 +26,14 @@ export function mode(scale: Scale, n: number) {
 	return range(1, n).reduce((s) => rotateModeOnce(s), scale)
 }
 
-export function rotateUp(scale: Scale) {
-	const [first, ...rest] = scale
-	const offset = [...rest, first + 12]
-	return offset
-}
-
+// Takes the original chord interval and rotates that around the scale.
+// Note: we can refactor here because rotateDiatonic(scale) is the same
+// as rotateChord(diatonic, scale)...
 export function rotateChord(scale: Scale, chord: Scale, n = 1) {
 	return range(0, n).reduce((c) => rotateChordOnce(scale, c), chord)
 }
 
-// console.log(rotateChordOnce([1, 4, 6], [1, 6]), [4, 13])
-// console.log(rotateChordOnce([1, 4, 6], [4, 13]), [6, 16])
-
-export function rotateChordOnce(scale: Scale, chord: Scale) {
+function rotateChordOnce(scale: Scale, chord: Scale) {
 	return chord.map((note) => {
 		const nextIndex = scale.indexOf(note % 12) + 1
 		const nextNote = scale[nextIndex % scale.length]
@@ -58,7 +52,13 @@ export function rebase(scale: Scale) {
 }
 
 export function rotateModeOnce(scale: Scale) {
-	return rebase(rotateUp(scale))
+	return rebase(rotateDiatonic(scale))
+}
+
+export function rotateDiatonic(scale: Scale) {
+	const [first, ...rest] = scale
+	const offset = [...rest, first + 12]
+	return offset
 }
 
 export const aeolian = mode(major, 6)
