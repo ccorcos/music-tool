@@ -3657,7 +3657,7 @@
         "affectsGlobalScope": false
       },
       "./src/app/components/squares.tsx": {
-        "version": "3e1f510adaaafb60ff3ac5676d45c48cf049906b820f7790ecf9244fc552a631",
+        "version": "569293a6ae86f40ca09e1a1a366d1fdd5ddf0ce38182b55b9f265eb8d76f0048",
         "signature": "ac1f2dd892a29272fabdf6419928a8a7e932c35330ba8ae88e83ec8f8edb1ba1",
         "affectsGlobalScope": false
       },
@@ -4094,6 +4094,7 @@
       "sourceMap": true,
       "allowJs": true,
       "incremental": true,
+      "skipLibCheck": true,
       "lib": [
         "lib.es2015.d.ts",
         "lib.es2016.d.ts",
@@ -14654,19 +14655,7 @@
       "./node_modules/automation-events/build/es2019/types/persistent-automation-event.d.ts",
       "./node_modules/csstype/index.d.ts",
       "./node_modules/esbuild/lib/main.d.ts",
-      [
-        "./node_modules/estrella/estrella.d.ts",
-        [
-          {
-            "file": "./node_modules/estrella/estrella.d.ts",
-            "start": 19446,
-            "length": 19,
-            "messageText": "Namespace '\"fs\"' has no exported member 'BaseEncodingOptions'.",
-            "category": 1,
-            "code": 2694
-          }
-        ]
-      ],
+      "./node_modules/estrella/estrella.d.ts",
       "./node_modules/glamor/index.d.ts",
       "./node_modules/standardized-audio-context/build/es2019/interfaces/analyser-node.d.ts",
       "./node_modules/standardized-audio-context/build/es2019/interfaces/analyser-options.d.ts",

@@ -25,7 +25,7 @@ function incAndWrap(scale: m.Scale, note: number, amount = 1) {
 }
 
 // Move the chords my moving note positions.
-const chords = range(5).map(
+const chords = range(scale.length * 3, scale.length * 6).map(
 	(i) => m.rotateChord(scale, startChord, i)
 	// startChord.map((note) => incAndWrap(scale, note, i))
 )
