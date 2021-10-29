@@ -1,7 +1,8 @@
+import { css } from "glamor"
 import * as React from "react"
 import * as ReactDOM from "react-dom"
-import { css } from "glamor"
-import { App } from "./components/App"
+import { Squares } from "./components/Squares"
+// import { App } from "./components/App"
 
 css.global("a", {
 	color: "inherit",
@@ -11,4 +12,4 @@ css.global("a", {
 const root = document.createElement("div")
 document.body.appendChild(root)
 
-ReactDOM.render(<App />, root)
+ReactDOM.render(<Squares />, root)
