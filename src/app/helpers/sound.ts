@@ -1,8 +1,15 @@
 import * as Tone from "tone"
 
-let synth: Tone.Synth | undefined
+let synth: Tone.PolySynth | undefined
 export function startTone() {
-	synth = new Tone.Synth().toDestination()
+	synth = new Tone.PolySynth().toDestination()
+}
+export function stopTone() {
+	synth = undefined
+}
+export function toggleTone() {
+	if (synth) stopTone()
+	else startTone()
 }
 
 export function hit(note: number) {
