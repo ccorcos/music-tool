@@ -9,7 +9,7 @@ export const major = [0, 2, 4, 5, 7, 9, 11]
 export const [
 	root,
 	flatTwo,
-	two,
+	second,
 	minorThird,
 	majorThird,
 	fourth,
@@ -20,6 +20,25 @@ export const [
 	minorSeven,
 	majorSeven,
 ] = diatonic
+
+const noteToName = {
+	[root]: "root",
+	[flatTwo]: "flatTwo",
+	[second]: "second",
+	[minorThird]: "minorThird",
+	[majorThird]: "majorThird",
+	[fourth]: "fourth",
+	[tritone]: "tritone",
+	[fifth]: "fifth",
+	[flatSixth]: "flatSixth",
+	[sixth]: "sixth",
+	[minorSeven]: "minorSeven",
+	[majorSeven]: "majorSeven",
+}
+
+export function scaleToString(scale: Scale) {
+	return scale.map((x) => noteToName[x]).join(" ")
+}
 
 /** Note: this will re-base the scale. */
 export function mode(scale: Scale, n: number) {
